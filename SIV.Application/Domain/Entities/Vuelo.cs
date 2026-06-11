@@ -1,34 +1,36 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SIV.Application.Common;
 
 namespace SIV.Application.Domain.Entities
 {
     public class Vuelo
     {
-        [Key]
-        public int IdVuelo { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
-        [Required, MaxLength(10)]
+        // Llaves foráneas explícitas del modelo relacional del SAD
+        public Guid AerolineaId { get; set; }
+        public Guid AeropuertoOrigenId { get; set; }
+        public Guid AeropuertoDestinoId { get; set; }
+
         public string NumeroVuelo { get; set; } = string.Empty;
+        public EstadoVuelo EstadoActual { get; set; } = EstadoVuelo.Programado; // EstadoActual según diccionario
 
-        [Required, MaxLength(50)]
-        public string Aerolinea { get; set; } = string.Empty;
+        // Uso obligatorio de datetimeoffset para la precisión de vuelos
+        public DateTimeOffset SalidaPlanificada { get; set; }
+        public DateTimeOffset LlegadaPlanificada { get; set; }
 
-        [Required, MaxLength(50)]
-        public string AeropuertoOrigen { get; set; } = string.Empty;
+        // Propiedades Nullable (SÍ aceptan nulos en el SAD)
+        public DateTimeOffset? SalidaActualizada { get; set; }
+        public DateTimeOffset? LlegadaActualizada { get; set; }
+        public string? PuertaEmbarque { get; set; }
 
-        [Required, MaxLength(50)]
-        public string AeropuertoDestino { get; set; } = string.Empty;
+        // Metadatos de auditoría requeridos en la Tabla Vuelos
+        public DateTime CreadoEn { get; set; } = DateTime.UtcNow;
+        public Guid CreadoPorId { get; set; }
 
-        [Required, MaxLength(30)]
-        public string EstadoActual { get; set; } = "Programado";
-
-        [Required]
-        public DateTime SalidaProgramada { get; set; }
-
-        [Required]
-        public DateTime LlegadaProgramada { get; set; }
-
-        [MaxLength(20)]
-        public string? Gate { get; set; }
+        // Relaciones de Navegación exigidas por los Bounded Contexts
+        public List<CambioOperativo> CambiosOperativos { get; set; } = new List<CambioOperativo>();
+        public List<HistorialEstado> HistorialEstados { get; set; } = new List<HistorialEstado>(); // Exigido en sección 5.1
+        public List<SeguimientoVuelo> Seguidores { get; set; } = new List<SeguimientoVuelo>();
+        public List<Notificacion> Notificaciones { get; set; } = new List<Notificacion>();
     }
 }

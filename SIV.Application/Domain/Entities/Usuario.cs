@@ -1,19 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using SIV.Application.Common;
 
 namespace SIV.Application.Domain.Entities
 {
     public class Usuario
     {
-        [Key]
-        public int IdUsuario { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Email { get; set; } = string.Empty; // Único en el sistema (RN-USU-01)
+        public string PasswordHash { get; set; } = string.Empty; // Hash BCrypt requerido en SAD
+        public Rol Rol { get; set; }
 
-        [Required, MaxLength(100)]
-        public string CorreoElectronico { get; set; } = string.Empty;
-
-        [Required, MaxLength(255)]
-        public string PasswordHash { get; set; } = string.Empty;
-
-        [Required, MaxLength(30)]
-        public string Rol { get; set; } = string.Empty;
+        public List<SeguimientoVuelo> Seguimientos { get; set; } = new List<SeguimientoVuelo>();
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SIV.Infrastructure.Persistence.Context;
 
@@ -11,9 +12,11 @@ using SIV.Infrastructure.Persistence.Context;
 namespace SIV.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(SIVDbContext))]
-    partial class SIVDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609162755_InitialMigration")]
+    partial class InitialMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

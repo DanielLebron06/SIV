@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SIV.Application.Domain.Entities;
-using SIV.Domain.Entities;
 
 namespace SIV.Infrastructure.Persistence.Context
 {
@@ -13,24 +12,48 @@ namespace SIV.Infrastructure.Persistence.Context
         public DbSet<Vuelo> Vuelos { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<CambioOperativo> CambiosOperativos { get; set; }
-        public DbSet<Seguimiento> Seguimientos { get; set; }
-        public DbSet<HistorialNotificacion> HistorialNotificaciones { get; set; }
-        public DbSet<Catalogo> Catalogos { get; set; }
+        public DbSet<HistorialEstado> HistorialEstados { get; set; }
+        public DbSet<SeguimientoVuelo> SeguimientosVuelos { get; set; }
+        public DbSet<Notificacion> Notificaciones { get; set; }
+        public DbSet<LogAuditoria> LogsAuditoria { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Mapeo simple: Le decimos a EF Core que almacene el enum de estados como texto
-            modelBuilder.Entity<Vuelo>()
-                .Property(e => e.EstadoActual)
-                .HasConversion<string>();
+            // Mapeo preciso según el Diccionario de Datos del SAD
+            modelBuilder.Entity<Vuelo>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.NumeroVuelo).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.EstadoActual).HasConversion<string>().HasMaxLength(50); // Almacena el texto del Enum en DB
+                entity.Property(e => e.PuertaEmbarque).HasMaxLength(10);
+            });
 
-            modelBuilder.Entity<HistorialNotificacion>()
-       .HasOne(h => h.Usuario)
-       .WithMany() // Se deja vacío porque Usuario no tiene una lista de notificaciones
-       .HasForeignKey(h => h.IdUsuario)
-       .OnDelete(DeleteBehavior.Restrict);
+            // Relación Vuelo -> HistorialEstado (1 a Muchos)
+            modelBuilder.Entity<HistorialEstado>()
+                .HasOne(h => h.Vuelo)
+                .WithMany(v => v.HistorialEstados)
+                .HasForeignKey(h => h.VueloId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relación Vuelo -> CambiosOperativos (1 a Muchos)
+            modelBuilder.Entity<CambioOperativo>()
+                .HasOne(c => c.Vuelo)
+                .WithMany(v => v.CambiosOperativos)
+                .HasForeignKey(c => c.VueloId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relación de Seguimiento
+            modelBuilder.Entity<SeguimientoVuelo>()
+                .HasOne(s => s.Usuario)
+                .WithMany(u => u.Seguimientos)
+                .HasForeignKey(s => s.UsuarioId);
+
+            modelBuilder.Entity<SeguimientoVuelo>()
+                .HasOne(s => s.Vuelo)
+                .WithMany(v => v.Seguidores)
+                .HasForeignKey(s => s.VueloId);
         }
     }
 }

@@ -1,36 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using SIV.Application.Common;
 
 namespace SIV.Application.Domain.Entities
 {
     public class CambioOperativo
     {
-        [Key]
-        public int IdCambio { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid VueloId { get; set; }
 
-        public int IdVuelo { get; set; }
+        public TipoCambio TipoCambio { get; set; }
+        public string Motivo { get; set; } = string.Empty; // Mapeado al payload 'motivo' de SignalR en el SAD
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow; // Nombre exacto del payload del SAD
 
-        [ForeignKey("IdVuelo")]
+        // Relación de navegación
         public Vuelo? Vuelo { get; set; }
-
-
-
-        public int IdUsuarioResponsable { get; set; }
-
-        [ForeignKey("IdUsuarioResponsable")]
-        public Usuario? UsuarioResponsable { get; set; }
-
-
-        [Required, MaxLength(30)]
-        public string EstadoAnterior { get; set; } = string.Empty;
-
-        [Required, MaxLength(30)]
-        public string NuevoEstado { get; set; } = string.Empty;
-
-        [Required, MaxLength(500)]
-        public string Justificacion { get; set; } = string.Empty;
-
-        [Required]
-        public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
     }
 }
