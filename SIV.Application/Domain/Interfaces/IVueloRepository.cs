@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SIV.Application.Domain.Interfaces
 {
-    public interface IVueloRepository
+    internal interface IVueloRepository
     {
     }
 }
