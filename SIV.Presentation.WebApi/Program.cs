@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SIV.Infrastructure.Persistence.Context;
+using SIV.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 

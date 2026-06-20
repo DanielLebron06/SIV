@@ -10,6 +10,7 @@ namespace SIV.Application.Domain.Entities
         public string Email { get; set; } = string.Empty; // Único en el sistema (RN-USU-01)
         public string PasswordHash { get; set; } = string.Empty; // Hash BCrypt requerido en SAD
         public Rol Rol { get; set; }
+        public bool Activo { get; set; } = true;
 
         public List<SeguimientoVuelo> Seguimientos { get; set; } = new List<SeguimientoVuelo>();
     }

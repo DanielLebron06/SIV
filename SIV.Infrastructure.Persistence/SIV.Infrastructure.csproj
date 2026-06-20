@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Folder Include="Logging\" />
+    <Folder Include="Persistence\Repositorios\" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SIV.Application.Domain.Entities;
 
 namespace SIV.Application.Domain.Interfaces
 {
-    public interface ICambioOperativoRepository
+    public interface ICambioOperativoRepository : IBaseRepository<CambioOperativo>
     {
+        Task<List<CambioOperativo>>BuscarPorVuelo(Guid vueloId);
     }
+
 }

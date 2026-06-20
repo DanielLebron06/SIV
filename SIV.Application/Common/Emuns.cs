@@ -22,7 +22,6 @@
 
     public enum Rol
     {
-        Visitante,
         UsuarioRegistrado,
         Operador,
         Administrador,
