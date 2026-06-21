@@ -1,0 +1,45 @@
+﻿
+
+using Microsoft.EntityFrameworkCore;
+using SIV.Domain.Entities;
+using SIV.Domain.Repositories;
+
+namespace SIV.Infrastructure.Persistence.Repositorios
+{
+    public class SeguimientoVueloRepository
+    : BaseRepository<SeguimientoVuelo>, ISeguimientoVueloRepository
+    {
+        public SeguimientoVueloRepository(SIVDbContext context) : base(context)
+        {
+        }
+
+        public async Task<List<SeguimientoVuelo>> BuscarPorUsuario(Guid usuarioId)
+        {
+            return await _dbSet
+                .Where(s => s.UsuarioId == usuarioId)
+                .ToListAsync();
+        }
+
+        public async Task<List<SeguimientoVuelo>> BuscarActivosPorUsuario(Guid usuarioId)
+        {
+            return await _dbSet
+                .Where(s => s.UsuarioId == usuarioId && s.FechaFin == null)
+                .ToListAsync();
+        }
+
+        public async Task<List<SeguimientoVuelo>> BuscarInactivosPorUsuario(Guid usuarioId)
+        {
+            return await _dbSet
+                .Where(s => s.UsuarioId == usuarioId && s.FechaFin != null)
+                .ToListAsync();
+        }
+
+        public async Task<bool> ExisteSeguimiento(Guid usuarioId, Guid vueloId)
+        {
+            return await _dbSet
+                .AnyAsync(s => s.UsuarioId == usuarioId
+                            && s.VueloId == vueloId
+                            && s.FechaFin == null);
+        }
+    }
+}

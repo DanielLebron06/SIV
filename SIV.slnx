@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Core/">
     <Project Path="SIV.Application/SIV.Application.csproj" Id="07480755-4fd0-4707-95ba-07b35784d88d" />
+    <Project Path="SIV.Domain/SIV.Domain.csproj" Id="119284c2-5070-4e87-bd24-c7e281001544" />
   </Folder>
   <Folder Name="/Infrastructure/">
     <Project Path="SIV.Infrastructure.Persistence/SIV.Infrastructure.csproj" Id="10e051d8-2da6-401f-a13c-0a0baad12581" />

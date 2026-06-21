@@ -15,12 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SIV.Application\SIV.Application.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Logging\" />
-    <Folder Include="Persistence\Repositorios\" />
+    <ProjectReference Include="..\SIV.Domain\SIV.Domain.csproj" />
   </ItemGroup>
 
 </Project>
