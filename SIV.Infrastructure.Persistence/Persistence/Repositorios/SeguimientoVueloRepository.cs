@@ -41,5 +41,22 @@ namespace SIV.Infrastructure.Persistence.Repositorios
                             && s.VueloId == vueloId
                             && s.FechaFin == null);
         }
+
+        public async Task<SeguimientoVuelo?> ObtenerSeguimiento(Guid usuarioId, Guid vueloId)
+        {
+            return await _dbSet
+                .FirstOrDefaultAsync(s => s.UsuarioId == usuarioId
+                            && s.VueloId == vueloId
+                            && s.FechaFin == null);
+        }
+
+        public async Task<List<SeguimientoVuelo>> BuscarPorPeriodoAsync(DateTime fechaInicio, DateTime fechaFin)
+        {
+            return await _dbSet
+                .Where(s =>
+                    (s.FechaInicio >= fechaInicio && s.FechaInicio <= fechaFin) ||
+                    (s.FechaFin != null && s.FechaFin >= fechaInicio && s.FechaFin <= fechaFin))
+                .ToListAsync();
+        }
     }
 }

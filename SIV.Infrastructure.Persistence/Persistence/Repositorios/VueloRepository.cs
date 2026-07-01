@@ -9,8 +9,6 @@ namespace SIV.Infrastructure.Persistence.Repositorios
     {
         public VueloRepository(SIVDbContext context) : base(context) { }
 
-
-
         public async Task<Vuelo?> BuscarPorNumeroVuelo(string numeroVuelo)
         {
             return await _dbSet
@@ -55,7 +53,13 @@ namespace SIV.Infrastructure.Persistence.Repositorios
             return await query.ToListAsync();
         }
 
-
+        public async Task<List<Vuelo>> BuscarPorPeriodoAsync(DateTime fechaInicio, DateTime fechaFin)
+        {
+            return await _dbSet
+                .Where(v => v.CreadoEn >= fechaInicio &&
+                            v.CreadoEn <= fechaFin)
+                .ToListAsync();
+        }
     }
 
 }

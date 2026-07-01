@@ -27,4 +27,25 @@
         Administrador,
         Auditor
     }
+
+
+    public enum Modulo
+    {
+        Usuarios,
+        Vuelos,
+        Notificaciones
+    }
+
+
+    public enum TipoAccion
+    {
+        Crear,
+        Actualizar,
+        Eliminar,
+        DesactivarUsuario,
+        Login,
+        SeguirVuelo,
+        DejarSeguirVuelo
+    }
+
 }

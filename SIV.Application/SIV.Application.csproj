@@ -10,8 +10,4 @@
     <ProjectReference Include="..\SIV.Domain\SIV.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Service\Implementations\" />
-  </ItemGroup>
-
 </Project>

@@ -1,18 +1,20 @@
-﻿using SIV.Application.DTOs;
+﻿
 using SIV.Domain.Entities;
-using SIV.Domain.Emuns;
+using SIV.Application.DTOs.Usuario;
+using SIV.Application.DTOs.Seguimiento;
+using SIV.Application.DTOs.Notificacion;
 
 namespace SIV.Application.Service.Interfaces
 {
     public interface IUserService
     {
-        Task RegistraUsuarioPublico(UsuarioDTO usuario);
-        Task RegistraUsuarioInterno(UsuarioDTO usuario, Usuario ejecutador);
-        Task<UsuarioDTO> InicioSesion(UsuarioDTO usuario);
+        Task RegistraUsuarioPublico(RegistroUsuarioDTO nuevoUsuario);
+        Task RegistraUsuarioInterno(RegistroUsuarioInternoDTO nuevoUsuario, Usuario ejecutador);
+        Task<UsuarioDTO> InicioSesion(LoginDTO usuario);
         Task DesactivarUsuario(Guid idUsuario, Usuario ejecutador);
-        Task SeguirVuelo(Guid VueloId, UsuarioDTO usuario);
-        Task DejarSeguirVuelo(Guid VueloId, UsuarioDTO usuario);
-        Task<List<SeguimientoVueloDTO>> ObtenerSeguidosDeUsuario(UsuarioDTO usuario);
-        Task<List<NotificacionDTO>> ObtnerNotificaciones(UsuarioDTO usuario);
+        Task SeguirVuelo(Guid vueloId, Usuario usuariousuarioAutenticado);
+        Task DejarSeguirVuelo(Guid vueloId, Usuario usuarioAutenticado);
+        Task<List<SeguimientoVueloDTO>> ObtenerSeguidosDeUsuario(Usuario usuarioAutenticado);
+        Task<List<NotificacionDTO>> ObtnerNotificaciones(Usuario usuarioAutenticado);
     }
 }

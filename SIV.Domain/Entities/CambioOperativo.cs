@@ -9,6 +9,7 @@ namespace SIV.Domain.Entities
         public TipoCambio TipoCambio { get; set; }
         public string Motivo { get; set; } = string.Empty; // Mapeado al payload 'motivo' de SignalR en el SAD
         public DateTime Timestamp { get; set; } = DateTime.UtcNow; // Nombre exacto del payload del SAD
+        public Guid UsuarioResponsableId { get; set; }
         public Vuelo? Vuelo { get; set; }
     }
 }

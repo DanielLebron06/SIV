@@ -1,22 +1,45 @@
-﻿using SIV.Domain.Emuns;
+﻿using SIV.Application.DTOs.Aerolinea;
+using SIV.Application.DTOs.Aeropuerto;
+using SIV.Application.DTOs.Vuelo;
+using SIV.Domain.Common;
+using SIV.Domain.Emuns;
 using SIV.Domain.Entities;
-using SIV.Application.DTOs;
+
 
 namespace SIV.Application.Service.Interfaces
 {
     public interface IFlightService
     {
-        Task RegistrarVuelo(DatosVuelo datos, Usuario usuario);
-        Task RegistrarAerolinea(AerolineaDTO datos, Usuario usuario);
-        Task RegistrarAeropuerto(AeropuertoDTO datos, Usuario usuario);
-        Task ActualizarVuelo(Guid vueloId, DatosVuelo datos, Usuario usuario);
-        Task<List<Aerolinea>> ObtenerAerolineas(Usuario usuario);
-        Task<List<Aeropuerto>> ObtenerAeropuerto(Usuario usuario);
-        Task DesactivarAeropuerto(Guid AeropuertoId, Usuario usuario);
-        Task DesactivarAerolinea(Guid AerolineaId, Usuario usuario);
-        Task<List<Vuelo>> ConsultarVuelos(FiltrosVuelos filtros, Usuario usuario);
-        Task CambiarEstadoVuelo(Guid vueloId, EstadoVuelo nuevoEstado, Usuario usuari);
-        Task<List<HistorialEstado>> ObtenerEstadosVuelo(Guid VueloId, Usuario usuario);
+
+        Task RegistrarVuelo(DatosVueloDTO datos, Usuario usuario);
+
+        Task RegistrarAerolinea(RegistroAerolineaDTO datos, Usuario usuario);
+
+        Task RegistrarAeropuerto(RegistroAeropuertoDTO datos, Usuario usuario);
+
+        Task ActualizarVuelo(Guid vueloId, DatosVueloDTO datos, Usuario usuario);
+
+        Task<List<AerolineaDTO>> ObtenerAerolineas(Usuario usuario);
+
+        Task<List<AeropuertoDTO>> ObtenerAeropuertos(Usuario usuario);
+
+        Task DesactivarAeropuerto(Guid aeropuertoId, Usuario usuario);
+
+        Task DesactivarAerolinea(Guid aerolineaId, Usuario usuario);
+
+        Task<List<DatosVueloDTO>> ConsultarVuelos(
+            FiltrosVuelos filtros,
+            Usuario usuario);
+
+        Task CambiarEstadoVuelo(
+            Guid vueloId,
+            EstadoVuelo nuevoEstado,
+            Usuario usuario);
+
+        Task<List<HistorialEstadoDTO>> ObtenerEstadosVuelo(
+            Guid vueloId,
+            Usuario usuario);
+
 
     }
 }
