@@ -14,7 +14,7 @@ namespace SIV.Infrastructure.Persistence.Repositorios
         protected readonly DbContext _context;
         protected readonly DbSet<T> _dbSet;
 
-        public BaseRepository(DbContext context)
+        public BaseRepository(SIVDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();

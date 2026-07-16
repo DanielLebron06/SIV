@@ -55,9 +55,9 @@ namespace SIV.Application.Service.Implementations
             }
         }
 
-        private async Task<Vuelo> ObtenerVuelo(Guid vueloId)
+        public async Task<Vuelo> ObtenerVuelo(Guid id)
         {
-            var vuelo = await _vueloRepository.GetByIdAsync(vueloId);
+            var vuelo = await _vueloRepository.GetByIdAsync(id);
 
             if (vuelo == null)
             {
@@ -121,6 +121,7 @@ namespace SIV.Application.Service.Implementations
 
             var vuelo = new Vuelo
             {
+                Id = Guid.NewGuid(),
                 NumeroVuelo = datos.NumeroVuelo,
                 AerolineaId = datos.AerolineaId,
                 AeropuertoOrigenId = datos.AeropuertoOrigenId,
@@ -361,7 +362,6 @@ namespace SIV.Application.Service.Implementations
             {
                 resultado.Add(new DatosVueloDTO
                 {
-                    Id = vuelo.Id,
                     NumeroVuelo = vuelo.NumeroVuelo,
                     AerolineaId = vuelo.AerolineaId,
                     AeropuertoOrigenId = vuelo.AeropuertoOrigenId,
@@ -425,7 +425,6 @@ namespace SIV.Application.Service.Implementations
 
             return resultado;
         }
-
 
 
     }

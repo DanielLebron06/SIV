@@ -21,4 +21,3 @@ namespace SIV.Application.DTOs.Auditoria
         public DateTime FechaHora { get; set; }
     }
 }
-``

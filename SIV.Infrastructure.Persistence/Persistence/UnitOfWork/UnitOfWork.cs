@@ -1,7 +1,9 @@
 ﻿
+using SIV.Domain.Interfaces;
+
 namespace SIV.Infrastructure.Persistence.UnitOfWork
 {
-    public class UnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
 
         private readonly SIVDbContext _context;

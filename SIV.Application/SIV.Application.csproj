@@ -7,7 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="MediatR" Version="14.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SIV.Domain\SIV.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\Reportes\Commands\" />
+    <Folder Include="Features\Reportes\Queries\" />
+    <Folder Include="Features\Usuarios\Commands\" />
+    <Folder Include="Features\Usuarios\Queries\" />
+    <Folder Include="Features\Vuelos\Commands\" />
+    <Folder Include="Features\Vuelos\Queries\" />
   </ItemGroup>
 
 </Project>

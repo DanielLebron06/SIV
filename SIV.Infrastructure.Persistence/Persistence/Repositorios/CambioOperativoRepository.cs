@@ -18,5 +18,13 @@ namespace SIV.Infrastructure.Persistence.Repositorios
                 .OrderByDescending(c => c.Timestamp)
                 .ToListAsync();
         }
+
+        public async Task<List<CambioOperativo>> BuscarPorPeriodoAsync(DateTime fechaInicio, DateTime fechaFin)
+        {
+            return await _dbSet
+                .Where(c => c.Timestamp >= fechaInicio && c.Timestamp <= fechaFin)
+                .OrderByDescending(c => c.Timestamp)
+                .ToListAsync();
+        }
     }
 }

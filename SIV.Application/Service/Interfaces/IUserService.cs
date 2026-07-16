@@ -9,6 +9,7 @@ namespace SIV.Application.Service.Interfaces
     public interface IUserService
     {
         Task RegistraUsuarioPublico(RegistroUsuarioDTO nuevoUsuario);
+        Task<Usuario> ObtenerPorEmail(string email);
         Task RegistraUsuarioInterno(RegistroUsuarioInternoDTO nuevoUsuario, Usuario ejecutador);
         Task<UsuarioDTO> InicioSesion(LoginDTO usuario);
         Task DesactivarUsuario(Guid idUsuario, Usuario ejecutador);

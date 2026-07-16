@@ -4,7 +4,6 @@ namespace SIV.Application.DTOs.Vuelo
 {
     public class DatosVueloDTO
     {
-        public Guid Id { get; set; }
         public string NumeroVuelo { get; set; } = string.Empty;
         public Guid AerolineaId { get; set; }
         public Guid AeropuertoOrigenId { get; set; }

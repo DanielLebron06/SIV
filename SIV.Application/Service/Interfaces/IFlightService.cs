@@ -40,6 +40,8 @@ namespace SIV.Application.Service.Interfaces
             Guid vueloId,
             Usuario usuario);
 
+        Task<Vuelo> ObtenerVuelo(Guid id);
+
 
     }
 }
