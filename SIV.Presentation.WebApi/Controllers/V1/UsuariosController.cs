@@ -1,9 +1,15 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIV.Application.DTOs.Usuario;
-using SIV.Application.Service.Interfaces;
-using SIV.Domain.Emuns;
-using SIV.Domain.Entities;
+using SIV.Application.Features.Usuarios.Commands.DejarSeguirVuelo;
+using SIV.Application.Features.Usuarios.Commands.DesactivarUsuario;
+using SIV.Application.Features.Usuarios.Commands.RegistrarUsuarioInterno;
+using SIV.Application.Features.Usuarios.Commands.RegistrarUsuarioPublico;
+using SIV.Application.Features.Usuarios.Commands.SeguirVuelo;
+using SIV.Application.Features.Usuarios.Queries.ObtenerNotificaciones;
+using SIV.Application.Features.Usuarios.Queries.ObtenerSeguidosDeUsuario;
+using System.Security.Claims;
 
 namespace SIV.Presentation.WebApi.Controllers
 {
@@ -11,18 +17,19 @@ namespace SIV.Presentation.WebApi.Controllers
     [Route("api/v1/[controller]")]
     public class UsuariosController : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly ISender _sender;
 
-        public UsuariosController(IUserService userService)
+        public UsuariosController(ISender sender)
         {
-            _userService = userService;
+            _sender = sender;
         }
 
         [AllowAnonymous]
         [HttpPost("registro-publico")]
         public async Task<IActionResult> RegistroPublico([FromBody] RegistroUsuarioDTO usuario)
         {
-            await _userService.RegistraUsuarioPublico(usuario);
+            var result = await _sender.Send(new RegistrarUsuarioPublicoCommand { Email = usuario.Email, Password = usuario.Password });
+            if (!result.Success) return BadRequest(result.Message);
             return Ok(new { mensaje = "Usuario registrado exitosamente como UsuarioRegistrado" });
         }
 
@@ -30,46 +37,60 @@ namespace SIV.Presentation.WebApi.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> RegistroInterno([FromBody] RegistroUsuarioInternoDTO usuario)
         {
-            // 1. Obtenemos el email del token
-            var emailEjecutador = User.Identity.Name;
-
-            // 2. El controlador le pide al SERVICIO, no al repositorio
-            var usuarioEjecutador = await _userService.ObtenerPorEmail(emailEjecutador);
-
-            // 3. Ejecutamos la lógica de negocio
-            await _userService.RegistraUsuarioInterno(usuario, usuarioEjecutador);
-
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new RegistrarUsuarioInternoCommand { Email = usuario.Email, Password = usuario.Password, Rol = usuario.Rol, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
             return Ok(new { mensaje = "Usuario interno creado exitosamente" });
         }
 
-        // GET /api/v1/Usuarios/seguimientos
         [HttpGet("seguimientos")]
         [Authorize(Roles = "UsuarioRegistrado")]
         public async Task<IActionResult> GetSeguimientos()
         {
-            var usuarioEjecutador = await _userService.ObtenerPorEmail(User.Identity?.Name ?? string.Empty);
-            var seguimientos = await _userService.ObtenerSeguidosDeUsuario(usuarioEjecutador);
-            return Ok(seguimientos);
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new ObtenerSeguidosDeUsuarioQuery { UsuarioId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok(result.Data);
         }
 
-        // GET /api/v1/Usuarios/notificaciones
         [HttpGet("notificaciones")]
         [Authorize(Roles = "UsuarioRegistrado, Administrador, Auditor")]
         public async Task<IActionResult> GetNotificaciones()
         {
-            var usuarioEjecutador = await _userService.ObtenerPorEmail(User.Identity?.Name ?? string.Empty);
-            var notificaciones = await _userService.ObtnerNotificaciones(usuarioEjecutador);
-            return Ok(notificaciones);
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new ObtenerNotificacionesQuery { UsuarioId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok(result.Data);
         }
 
-        // POST /api/v1/Usuarios/seguimiento
         [HttpPost("seguimiento")]
         [Authorize(Roles = "UsuarioRegistrado")]
         public async Task<IActionResult> AgregarSeguimiento([FromBody] AgregarSeguimientoRequest request)
         {
-            var usuarioEjecutador = await _userService.ObtenerPorEmail(User.Identity?.Name ?? string.Empty);
-            await _userService.SeguirVuelo(request.VueloId, usuarioEjecutador);
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new SeguirVueloCommand { VueloId = request.VueloId, UsuarioId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
             return Ok();
+        }
+
+        [HttpDelete("seguimiento/{vueloId}")]
+        [Authorize(Roles = "UsuarioRegistrado")]
+        public async Task<IActionResult> DejarSeguirVuelo(Guid vueloId)
+        {
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new DejarSeguirVueloCommand { VueloId = vueloId, UsuarioId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok();
+        }
+
+        [HttpPut("{id}/desactivar")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> DesactivarUsuario(Guid id)
+        {
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new DesactivarUsuarioCommand { IdUsuarioADesactivar = id, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok(new { mensaje = "Usuario desactivado exitosamente" });
         }
     }
 

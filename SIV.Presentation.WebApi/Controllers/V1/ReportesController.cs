@@ -1,9 +1,14 @@
-using Microsoft.AspNetCore.Mvc;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using SIV.Application.Service.Interfaces;
-using SIV.Application.DTOs.Reportes;
+using Microsoft.AspNetCore.Mvc;
 using SIV.Application.DTOs.Auditoria;
-using SIV.Domain.Entities;
+using SIV.Application.DTOs.Reportes;
+using SIV.Application.Features.Reportes.Queries.ConsultarLogAuditoria;
+using SIV.Application.Features.Reportes.Queries.ExportarReporteOperacionVuelosCsv;
+using SIV.Application.Features.Reportes.Queries.GenerarReporteCambiosOperativos;
+using SIV.Application.Features.Reportes.Queries.GenerarReporteOperacionVuelos;
+using SIV.Application.Features.Reportes.Queries.GenerarReporteSeguimiento;
+using System.Security.Claims;
 using System.Text;
 
 namespace SIV.Presentation.WebApi.Controllers
@@ -13,40 +18,56 @@ namespace SIV.Presentation.WebApi.Controllers
     [Authorize(Roles = "Administrador, Auditor")]
     public class ReportesController : ControllerBase
     {
-        private readonly IReportesService _reportesService;
-        private readonly IUserService _userService;
+        private readonly ISender _sender;
 
-        public ReportesController(IReportesService reportesService, IUserService userService)
+        public ReportesController(ISender sender)
         {
-            _reportesService = reportesService;
-            _userService = userService;
+            _sender = sender;
         }
 
-        // GET /api/v1/Reportes/operacion-vuelos
         [HttpGet("operacion-vuelos")]
         public async Task<IActionResult> GetOperacionVuelos([FromQuery] ReportePeriodoDTO periodo)
         {
-            var usuarioEjecutador = await _userService.ObtenerPorEmail(User.Identity.Name);
-            var reporte = await _reportesService.GenerarReporteOperacionVuelos(periodo, usuarioEjecutador);
-            return Ok(reporte);
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new GenerarReporteOperacionVuelosQuery { Periodo = periodo, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok(result.Data);
         }
 
-        // GET /api/v1/Reportes/operacion-vuelos/csv
         [HttpGet("operacion-vuelos/csv")]
         public async Task<IActionResult> GetOperacionVuelosCsv([FromQuery] ReportePeriodoDTO periodo)
         {
-            var usuarioEjecutador = await _userService.ObtenerPorEmail(User.Identity.Name);
-            var csv = await _reportesService.ExportarReporteOperacionVuelosCsv(periodo, usuarioEjecutador);
-            return File(Encoding.UTF8.GetBytes(csv), "text/csv", "operacion-vuelos.csv");
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new ExportarReporteOperacionVuelosCsvQuery { Periodo = periodo, EjecutadorId = ejecutadorId });
+            if (!result.Success || result.Data == null) return BadRequest(result.Message);
+            return File(Encoding.UTF8.GetBytes(result.Data), "text/csv", "operacion-vuelos.csv");
         }
 
-        // GET /api/v1/Reportes/auditoria
         [HttpGet("auditoria")]
         public async Task<IActionResult> GetAuditoria([FromQuery] FiltroAuditoriaDTO filtros)
         {
-            var usuarioEjecutador = await _userService.ObtenerPorEmail(User.Identity.Name);
-            var auditoria = await _reportesService.ConsultarLogAuditoria(filtros, usuarioEjecutador);
-            return Ok(auditoria);
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new ConsultarLogAuditoriaQuery { Filtros = filtros, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok(result.Data);
+        }
+
+        [HttpGet("cambios-operativos")]
+        public async Task<IActionResult> GetCambiosOperativos([FromQuery] ReportePeriodoDTO periodo)
+        {
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new GenerarReporteCambiosOperativosQuery { Periodo = periodo, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok(result.Data);
+        }
+
+        [HttpGet("seguimiento")]
+        public async Task<IActionResult> GetSeguimiento([FromQuery] ReportePeriodoDTO periodo)
+        {
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new GenerarReporteSeguimientoQuery { Periodo = periodo, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok(result.Data);
         }
     }
 }

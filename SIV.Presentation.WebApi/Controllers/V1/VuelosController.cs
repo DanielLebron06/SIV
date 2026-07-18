@@ -1,10 +1,16 @@
-using Microsoft.AspNetCore.Mvc;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SIV.Application.DTOs.Vuelo;
-using SIV.Application.Service.Interfaces;
-using SIV.Domain.Entities;
+using SIV.Application.Features.Vuelos.Commands.ActualizarVuelo;
+using SIV.Application.Features.Vuelos.Commands.CambiarEstadoVuelo;
+using SIV.Application.Features.Vuelos.Commands.RegistrarVuelo;
+using SIV.Application.Features.Vuelos.Queries.ConsultarVuelos;
+using SIV.Application.Features.Vuelos.Queries.ObtenerEstadosVuelo;
+using SIV.Application.Features.Vuelos.Queries.ObtenerVuelo;
 using SIV.Domain.Emuns;
 using SIV.Domain.Common;
+using System.Security.Claims;
 
 namespace SIV.Presentation.WebApi.Controllers
 {
@@ -12,79 +18,65 @@ namespace SIV.Presentation.WebApi.Controllers
     [Route("api/v1/[controller]")]
     public class VuelosController : ControllerBase
     {
-        private readonly IFlightService _flightService;
-        private readonly IUserService _userService;
+        private readonly ISender _sender;
 
-        public VuelosController(IFlightService flightService, IUserService userService)
+        public VuelosController(ISender sender)
         {
-            _flightService = flightService;
-            _userService = userService;
+            _sender = sender;
         }
 
-        // GET /api/v1/Vuelos
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] FiltrosVuelos filtros)
         {
-            Usuario usuarioContext = User.Identity?.IsAuthenticated == true
-                ? await _userService.ObtenerPorEmail(User.Identity.Name)
-                : new Usuario { Email = "public@siv.com" };
-
-            var resultado = await _flightService.ConsultarVuelos(filtros, usuarioContext);
-            return Ok(resultado);
+            var result = await _sender.Send(new ConsultarVuelosQuery { Filtros = filtros });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok(result.Data);
         }
 
-        // GET /api/v1/Vuelos/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            try
-            {
-                
-                var vuelo = await _flightService.ObtenerVuelo(id);
-
-                if (vuelo == null)
-                {
-                    return NotFound(new { mensaje = $"No se encontró un vuelo con el ID {id}" });
-                }
-
-                return Ok(vuelo);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensaje = ex.Message });
-            }
+            var result = await _sender.Send(new ObtenerVueloQuery { VueloId = id });
+            if (!result.Success) return NotFound(new { mensaje = result.Message });
+            return Ok(result.Data);
         }
 
-        // POST /api/v1/Vuelos
         [HttpPost]
         [Authorize(Roles = "Operador")]
         public async Task<IActionResult> Create([FromBody] DatosVueloDTO dto)
         {
-            var usuarioEjecutador = await _userService.ObtenerPorEmail(User.Identity.Name);
-            await _flightService.RegistrarVuelo(dto, usuarioEjecutador);
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new RegistrarVueloCommand { Datos = dto, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
             return Ok();
         }
 
-        // PUT /api/v1/Vuelos/{id}/estado
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Operador")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] DatosVueloDTO dto)
+        {
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new ActualizarVueloCommand { VueloId = id, Datos = dto, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok();
+        }
+
         [HttpPut("{id}/estado")]
         [Authorize(Roles = "Operador")]
         public async Task<IActionResult> UpdateEstado(Guid id, [FromBody] ActualizarEstadoDTO dto)
         {
-            var usuarioEjecutador = await _userService.ObtenerPorEmail(User.Identity.Name);
-            await _flightService.CambiarEstadoVuelo(id, dto.NuevoEstado, usuarioEjecutador);
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new CambiarEstadoVueloCommand { VueloId = id, NuevoEstado = dto.NuevoEstado, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
             return NoContent();
         }
 
-        // GET /api/v1/Vuelos/{id}/historial
         [HttpGet("{id}/historial")]
         public async Task<IActionResult> GetHistorial(Guid id)
         {
-            Usuario usuarioContext = User.Identity?.IsAuthenticated == true
-                ? await _userService.ObtenerPorEmail(User.Identity.Name)
-                : new Usuario { Email = "public@siv.com" };
-
-            var historial = await _flightService.ObtenerEstadosVuelo(id, usuarioContext);
-            return Ok(historial);
+            var result = await _sender.Send(new ObtenerEstadosVueloQuery { VueloId = id });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok(result.Data);
         }
     }
 
