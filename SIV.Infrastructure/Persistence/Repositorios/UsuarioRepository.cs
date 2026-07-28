@@ -27,5 +27,16 @@ namespace SIV.Infrastructure.Persistence.Repositorios
                 .Where(u => u.Activo)
                 .ToListAsync();
         }
+
+        public async Task<List<Usuario>> BuscarInternos()
+        {
+            //Aqui defino los roles que son internos
+            var rolesPermitidos = new[] { Rol.Operador, Rol.Administrador, Rol.Auditor };
+
+            return await _dbSet
+                .AsNoTracking()
+                .Where(u => u.Activo && rolesPermitidos.Contains(u.Rol))
+                .ToListAsync();
+        }
     }
 }

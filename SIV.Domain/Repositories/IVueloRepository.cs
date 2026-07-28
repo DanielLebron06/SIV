@@ -10,5 +10,6 @@ namespace SIV.Domain.Repositories
         Task<List<Vuelo>> BuscarPorAeropuerto(Guid aeropuertoId);
         Task<List<Vuelo>> BuscarConFiltros(FiltrosVuelos filtros);
         Task<List<Vuelo>> BuscarPorPeriodoAsync(DateTime fechaInicio, DateTime fechaFin);
+        Task<Vuelo?> GetVueloConDetallesAsync(Guid id);
     }
 }

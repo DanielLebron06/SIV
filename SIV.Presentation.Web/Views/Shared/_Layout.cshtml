@@ -20,11 +20,45 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark"
+                               asp-controller="Vuelos"
+                               asp-action="Index">
+                                Gestión de Vuelos
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark"
+                               asp-controller="TableroVuelos"
+                               asp-action="Index">
+                                Tablero de Vuelos
+                            </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark"
+                               asp-controller="Usuarios"
+                               asp-action="Index">
+                                Usuarios
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark"
+                               asp-controller="Reportes"
+                               asp-action="Index">
+                                Reportes
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark"
+                               asp-controller="Catalogos"
+                               asp-action="Index">
+                                Catálogos
+                            </a>
+                        </li>
+
                     </ul>
                 </div>
             </div>

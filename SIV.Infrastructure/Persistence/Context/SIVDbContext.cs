@@ -38,17 +38,19 @@ namespace SIV.Infrastructure.Persistence
                 // REQUISITO DEL SAD: RELACIONES DE CATÁLOGOS
                 // ==========================================
 
-                entity.HasOne<Aerolinea>()
+                entity.HasOne(v => v.Aerolinea)
                       .WithMany()
                       .HasForeignKey(e => e.AerolineaId)
                       .OnDelete(DeleteBehavior.NoAction);
 
                 // Un Vuelo tiene un Aeropuerto de Origen
-                entity.HasOne<Aeropuerto>()
+                entity.HasOne(v => v.AeropuertoOrigen)
                       .WithMany()
                       .HasForeignKey(e => e.AeropuertoOrigenId)
                       .OnDelete(DeleteBehavior.NoAction);
-                entity.HasOne<Aeropuerto>()
+
+                // Un Vuelo tiene un Aeropuerto de Destino
+                entity.HasOne(v => v.AeropuertoDestino)
                       .WithMany()
                       .HasForeignKey(e => e.AeropuertoDestinoId)
                       .OnDelete(DeleteBehavior.NoAction);

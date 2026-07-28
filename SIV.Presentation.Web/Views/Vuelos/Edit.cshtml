@@ -1,0 +1,157 @@
+﻿@model SIV.Application.DTOs.Vuelo.DatosVueloDTO
+
+@{
+    ViewData["Title"] = "Editar Vuelo";
+}
+
+<h1>Editar Vuelo</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-7">
+
+        <form asp-action="Edit" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <input type="hidden" asp-for="Id" />
+
+            <div class="mb-3">
+                <label asp-for="NumeroVuelo" class="form-label fw-bold"></label>
+                <input asp-for="NumeroVuelo" class="form-control" />
+                <span asp-validation-for="NumeroVuelo" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AerolineaId" class="form-label fw-bold">
+                    Aerolínea
+                </label>
+
+                <select asp-for="AerolineaId"
+                        class="form-select"
+                        asp-items="ViewBag.Aerolineas">
+
+                    <option value="">Seleccione una aerolínea</option>
+
+                </select>
+
+                <span asp-validation-for="AerolineaId"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="AeropuertoOrigenId"
+                       class="form-label fw-bold">
+
+                    Aeropuerto de Origen
+
+                </label>
+
+                <select asp-for="AeropuertoOrigenId"
+                        class="form-select"
+                        asp-items="ViewBag.Aeropuertos">
+
+                    <option value="">Seleccione origen</option>
+
+                </select>
+
+                <span asp-validation-for="AeropuertoOrigenId"
+                      class="text-danger"></span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="AeropuertoDestinoId"
+                       class="form-label fw-bold">
+
+                    Aeropuerto de Destino
+
+                </label>
+
+                <select asp-for="AeropuertoDestinoId"
+                        class="form-select"
+                        asp-items="ViewBag.Aeropuertos">
+
+                    <option value="">Seleccione destino</option>
+
+                </select>
+
+                <span asp-validation-for="AeropuertoDestinoId"
+                      class="text-danger"></span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="FechaSalidaProgramada"
+                       class="form-label fw-bold">
+
+                    Fecha y Hora de Salida
+
+                </label>
+
+                <input asp-for="FechaSalidaProgramada"
+                       type="datetime-local"
+                       class="form-control" />
+
+                <span asp-validation-for="FechaSalidaProgramada"
+                      class="text-danger"></span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="FechaLlegadaProgramada"
+                       class="form-label fw-bold">
+
+                    Fecha y Hora de Llegada
+
+                </label>
+
+                <input asp-for="FechaLlegadaProgramada"
+                       type="datetime-local"
+                       class="form-control" />
+
+                <span asp-validation-for="FechaLlegadaProgramada"
+                      class="text-danger"></span>
+
+            </div>
+
+            <div class="d-flex gap-2">
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    Guardar Cambios
+
+                </button>
+
+                <a asp-action="Details"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-info">
+
+                    Ver Detalle
+
+                </a>
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+
+                    Cancelar
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

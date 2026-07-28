@@ -1,0 +1,70 @@
+﻿@model IEnumerable<SIV.Application.DTOs.Seguimiento.SeguimientoVueloDTO>
+
+@{
+    ViewData["Title"] = "Mis Seguimientos";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Mis Vuelos Seguidos</h2>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Volver</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-warning">@ViewBag.Message</div>
+}
+
+<table class="table table-striped table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Número de Vuelo</th>
+            <th>Fecha de Inicio</th>
+            <th>Fecha Fin</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var seguimiento in Model)
+            {
+                <tr>
+                    <td>@seguimiento.NumeroVuelo</td>
+                    <td>@seguimiento.FechaInicio.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@(seguimiento.FechaFin?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                    <td class="text-center">
+                        <a asp-controller="Vuelos" asp-action="Details" asp-route-id="@seguimiento.VueloId" class="btn btn-sm btn-outline-info">
+                            Ver Vuelo
+                        </a>
+
+                        <form asp-action="DejarSeguir" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="vueloId" value="@seguimiento.VueloId" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Desea dejar de seguir este vuelo?');">
+                                Dejar de seguir
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                    Actualmente no estás siguiendo ningún vuelo.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

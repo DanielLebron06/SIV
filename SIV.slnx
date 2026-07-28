@@ -4,7 +4,7 @@
     <Project Path="SIV.Domain/SIV.Domain.csproj" Id="119284c2-5070-4e87-bd24-c7e281001544" />
   </Folder>
   <Folder Name="/Infrastructure/">
-    <Project Path="SIV.Infrastructure.Persistence/SIV.Infrastructure.csproj" Id="10e051d8-2da6-401f-a13c-0a0baad12581" />
+    <Project Path="SIV.Infrastructure/SIV.Infrastructure.csproj" Id="10e051d8-2da6-401f-a13c-0a0baad12581" />
   </Folder>
   <Folder Name="/Presentation/">
     <Project Path="SIV.Presentation.Desktop/SIV.Presentation.Desktop.csproj" Id="bcf83971-0b0f-4cb5-8583-c10756e668c4" />

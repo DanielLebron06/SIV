@@ -19,7 +19,7 @@ namespace SIV.Application.Features.Vuelos.Queries.ConsultarVuelos
     /// </summary>
     public class ConsultarVuelosQuery : IRequest<Result<List<DatosVueloDTO>>>
     {
-        public FiltrosVuelos Filtros { get; set; } = new();
+        public FiltrosVuelos? Filtros { get; set; } = new();
     }
 
     /// <summary>
@@ -75,10 +75,14 @@ namespace SIV.Application.Features.Vuelos.Queries.ConsultarVuelos
                 {
                     resultado.Add(new DatosVueloDTO
                     {
+                        Id = vuelo.Id,
                         NumeroVuelo = vuelo.NumeroVuelo,
                         AerolineaId = vuelo.AerolineaId,
                         AeropuertoOrigenId = vuelo.AeropuertoOrigenId,
                         AeropuertoDestinoId = vuelo.AeropuertoDestinoId,
+                        AerolineaNombre = vuelo.Aerolinea?.Nombre ?? "N/A",
+                        AeropuertoOrigenIATA = vuelo.AeropuertoOrigen?.CodigoIATA ?? "N/A",
+                        AeropuertoDestinoIATA = vuelo.AeropuertoDestino?.CodigoIATA ?? "N/A",
                         EstadoActual = vuelo.EstadoActual,
                         FechaSalidaProgramada = vuelo.SalidaPlanificada,
                         FechaLlegadaProgramada = vuelo.LlegadaPlanificada

@@ -1,0 +1,75 @@
+﻿@model IEnumerable<SIV.Application.DTOs.Notificacion.NotificacionDTO>
+
+@{
+    ViewData["Title"] = "Notificaciones";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Notificaciones</h2>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</div>
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-warning">
+        @ViewBag.Message
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table table-striped table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Mensaje</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th class="text-center">Vuelo</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var notificacion in Model)
+            {
+                <tr>
+                    <td>@notificacion.Titulo</td>
+                    <td>@notificacion.Mensaje</td>
+                    <td>@notificacion.FechaEnvio.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        @if (notificacion.Leida)
+                        {
+                            <span class="badge bg-success">Leída</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">No Leída</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <a asp-controller="Vuelos" asp-action="Details" asp-route-id="@notificacion.VueloId" class="btn btn-sm btn-outline-primary">
+                            Ver Vuelo
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    No existen notificaciones.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

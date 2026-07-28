@@ -9,6 +9,7 @@ using SIV.Application.Features.Usuarios.Commands.RegistrarUsuarioPublico;
 using SIV.Application.Features.Usuarios.Commands.SeguirVuelo;
 using SIV.Application.Features.Usuarios.Queries.ObtenerNotificaciones;
 using SIV.Application.Features.Usuarios.Queries.ObtenerSeguidosDeUsuario;
+using SIV.Application.Features.Usuarios.Queries.ObtenerUsuariosInternos;
 using System.Security.Claims;
 
 namespace SIV.Presentation.WebApi.Controllers
@@ -83,6 +84,18 @@ namespace SIV.Presentation.WebApi.Controllers
             return Ok();
         }
 
+        [HttpGet("internos")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> GetUsuariosInternos()
+        {
+            var result = await _sender.Send(new ObtenerUsuariosInternosQuery());
+
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
+        }
+
         [HttpPut("{id}/desactivar")]
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> DesactivarUsuario(Guid id)
@@ -92,7 +105,10 @@ namespace SIV.Presentation.WebApi.Controllers
             if (!result.Success) return BadRequest(result.Message);
             return Ok(new { mensaje = "Usuario desactivado exitosamente" });
         }
+        
     }
+
+
 
     public class AgregarSeguimientoRequest
     {

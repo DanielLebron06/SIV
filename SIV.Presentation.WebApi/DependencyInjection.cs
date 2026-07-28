@@ -24,7 +24,7 @@ public static class DependencyInjection
 
         var connectionString = configuration.GetConnectionString("SIVTestConnection");
         services.AddDbContext<SIVDbContext>(options =>
-            options.UseSqlServer(connectionString, b => b.MigrationsAssembly("SIV.Infrastructure.Persistence")));
+            options.UseSqlServer(connectionString, b => b.MigrationsAssembly("SIV.Infrastructure")));
 
         services.AddScoped<IAuditoriaManager, AuditoriaManager>();
         services.AddScoped<IBaseRepository<LogAuditoria>, BaseRepository<LogAuditoria>>();

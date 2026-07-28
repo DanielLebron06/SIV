@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using SIV.Application.DTOs.Vuelo;
 using SIV.Application.Features.Vuelos.Commands.ActualizarVuelo;
 using SIV.Application.Features.Vuelos.Commands.CambiarEstadoVuelo;
@@ -8,8 +10,9 @@ using SIV.Application.Features.Vuelos.Commands.RegistrarVuelo;
 using SIV.Application.Features.Vuelos.Queries.ConsultarVuelos;
 using SIV.Application.Features.Vuelos.Queries.ObtenerEstadosVuelo;
 using SIV.Application.Features.Vuelos.Queries.ObtenerVuelo;
-using SIV.Domain.Emuns;
 using SIV.Domain.Common;
+using SIV.Domain.Emuns;
+using SIV.Presentation.WebApi.Hubs;
 using System.Security.Claims;
 
 namespace SIV.Presentation.WebApi.Controllers
@@ -19,10 +22,11 @@ namespace SIV.Presentation.WebApi.Controllers
     public class VuelosController : ControllerBase
     {
         private readonly ISender _sender;
-
-        public VuelosController(ISender sender)
+        private readonly IHubContext<VuelosHub> _hubContext;
+        public VuelosController(ISender sender, IHubContext<VuelosHub> hubContext)
         {
             _sender = sender;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -68,6 +72,7 @@ namespace SIV.Presentation.WebApi.Controllers
             var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
             var result = await _sender.Send(new CambiarEstadoVueloCommand { VueloId = id, NuevoEstado = dto.NuevoEstado, EjecutadorId = ejecutadorId });
             if (!result.Success) return BadRequest(result.Message);
+            await _hubContext.Clients.All.SendAsync("VueloEstadoCambiado", id, dto.NuevoEstado.ToString());
             return NoContent();
         }
 

@@ -8,7 +8,9 @@ namespace SIV.Domain.Entities
         public Guid AerolineaId { get; set; }
         public Guid AeropuertoOrigenId { get; set; }
         public Guid AeropuertoDestinoId { get; set; }
-
+        public Aerolinea? Aerolinea { get; set; }
+        public Aeropuerto? AeropuertoOrigen { get; set; }
+        public Aeropuerto? AeropuertoDestino { get; set; }
         public string NumeroVuelo { get; set; } = string.Empty;
         public EstadoVuelo EstadoActual { get; set; } = EstadoVuelo.Programado;
 

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SIV.Application\SIV.Application.csproj" />
-    <ProjectReference Include="..\SIV.Infrastructure.Persistence\SIV.Infrastructure.csproj" />
+    <ProjectReference Include="..\SIV.Infrastructure\SIV.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SIV.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using SIV.Infrastructure.Persistence;
 namespace SIV.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(SIVDbContext))]
-    partial class SIVDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728050839_AgregarNavegacionVuelos")]
+    partial class AgregarNavegacionVuelos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -366,23 +369,29 @@ namespace SIV.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SIV.Domain.Entities.Vuelo", b =>
                 {
-                    b.HasOne("SIV.Domain.Entities.Aerolinea", null)
+                    b.HasOne("SIV.Domain.Entities.Aerolinea", "Aerolinea")
                         .WithMany()
                         .HasForeignKey("AerolineaId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("SIV.Domain.Entities.Aeropuerto", null)
+                    b.HasOne("SIV.Domain.Entities.Aeropuerto", "AeropuertoDestino")
                         .WithMany()
                         .HasForeignKey("AeropuertoDestinoId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("SIV.Domain.Entities.Aeropuerto", null)
+                    b.HasOne("SIV.Domain.Entities.Aeropuerto", "AeropuertoOrigen")
                         .WithMany()
                         .HasForeignKey("AeropuertoOrigenId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Aerolinea");
+
+                    b.Navigation("AeropuertoDestino");
+
+                    b.Navigation("AeropuertoOrigen");
                 });
 
             modelBuilder.Entity("SIV.Domain.Entities.Usuario", b =>

@@ -11,28 +11,32 @@ namespace SIV.Infrastructure.Persistence.Repositorios
 
         public async Task<Vuelo?> BuscarPorNumeroVuelo(string numeroVuelo)
         {
-            return await _dbSet
+            return await _dbSet.AsNoTracking()
                 .FirstOrDefaultAsync(v => v.NumeroVuelo == numeroVuelo);
         }
 
         public async Task<List<Vuelo>> BuscarPorAerolinea(Guid aerolineaId)
         {
-            return await _dbSet
+            return await _dbSet.AsNoTracking()
                 .Where(v => v.AerolineaId == aerolineaId)
                 .ToListAsync();
         }
 
         public async Task<List<Vuelo>> BuscarPorAeropuerto(Guid aeropuertoId)
         {
-            return await _dbSet
-                .Where(v => v.AeropuertoOrigenId == aeropuertoId ||
-                            v.AeropuertoDestinoId == aeropuertoId)
-                .ToListAsync();
+            var origen = _dbSet.AsNoTracking().Where(v => v.AeropuertoOrigenId == aeropuertoId);
+            var destino = _dbSet.AsNoTracking().Where(v => v.AeropuertoDestinoId == aeropuertoId);
+
+            return await origen.Union(destino).ToListAsync();
         }
 
         public async Task<List<Vuelo>> BuscarConFiltros(FiltrosVuelos filtros)
         {
-            var query = _dbSet.AsQueryable();
+            var query = _dbSet.AsNoTracking()
+                .Include(v => v.Aerolinea)
+                .Include(v => v.AeropuertoOrigen)
+                .Include(v => v.AeropuertoDestino)
+                .AsQueryable();
 
             if (filtros.AerolineaId.HasValue)
                 query = query.Where(v => v.AerolineaId == filtros.AerolineaId);
@@ -47,18 +51,30 @@ namespace SIV.Infrastructure.Persistence.Repositorios
                 query = query.Where(v => v.EstadoActual == filtros.Estado);
 
             if (filtros.Fecha.HasValue)
-                query = query.Where(v =>
-                    v.SalidaPlanificada.Date == filtros.Fecha.Value.Date);
+            {
+                var fechaInicio = filtros.Fecha.Value.Date;
+                var fechaFin = fechaInicio.AddDays(1);
+                query = query.Where(v => v.SalidaPlanificada >= fechaInicio && v.SalidaPlanificada < fechaFin);
+            }
 
             return await query.ToListAsync();
         }
 
         public async Task<List<Vuelo>> BuscarPorPeriodoAsync(DateTime fechaInicio, DateTime fechaFin)
         {
-            return await _dbSet
+            return await _dbSet.AsNoTracking()
                 .Where(v => v.CreadoEn >= fechaInicio &&
                             v.CreadoEn <= fechaFin)
                 .ToListAsync();
+        }
+
+        public async Task<Vuelo?> GetVueloConDetallesAsync(Guid id)
+        {
+            return await _dbSet
+                .Include(v => v.Aerolinea)
+                .Include(v => v.AeropuertoOrigen)
+                .Include(v => v.AeropuertoDestino)
+                .FirstOrDefaultAsync(v => v.Id == id);
         }
     }
 

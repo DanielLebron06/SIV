@@ -63,7 +63,7 @@ namespace SIV.Application.Features.Vuelos.Queries.ObtenerVuelo
                     return result;
                 }
 
-                var vuelo = await _vueloRepository.GetByIdAsync(request.VueloId);
+                var vuelo = await _vueloRepository.GetVueloConDetallesAsync(request.VueloId);
 
                 if (vuelo == null)
                 {
@@ -74,13 +74,17 @@ namespace SIV.Application.Features.Vuelos.Queries.ObtenerVuelo
 
                 var dto = new DatosVueloDTO
                 {
+                    Id = vuelo.Id,
                     NumeroVuelo = vuelo.NumeroVuelo,
                     AerolineaId = vuelo.AerolineaId,
                     AeropuertoOrigenId = vuelo.AeropuertoOrigenId,
                     AeropuertoDestinoId = vuelo.AeropuertoDestinoId,
                     EstadoActual = vuelo.EstadoActual,
                     FechaSalidaProgramada = vuelo.SalidaPlanificada,
-                    FechaLlegadaProgramada = vuelo.LlegadaPlanificada
+                    FechaLlegadaProgramada = vuelo.LlegadaPlanificada,
+                    AerolineaNombre = vuelo.Aerolinea?.Nombre ?? "Sin Aerolínea",
+                    AeropuertoOrigenIATA = vuelo.AeropuertoOrigen?.CodigoIATA ?? "N/A",
+                    AeropuertoDestinoIATA = vuelo.AeropuertoDestino?.CodigoIATA ?? "N/A"
                 };
 
                 result.Success = true;

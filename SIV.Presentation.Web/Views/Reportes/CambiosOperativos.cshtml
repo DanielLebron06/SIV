@@ -1,0 +1,55 @@
+﻿@model IEnumerable<SIV.Application.DTOs.Reportes.ReporteCambioOperativoDTO>
+
+@{
+    ViewData["Title"] = "Cambios Operativos";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Cambios Operativos</h2>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table table-striped table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Vuelo</th>
+            <th>Cambio</th>
+            <th>Motivo</th>
+            <th>Fecha</th>
+            <th>Operador</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.NumeroVuelo</td>
+                    <td>@item.TipoCambio</td>
+                    <td>@item.Motivo</td>
+                    <td>@item.FechaCambio.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@item.OperadorId</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    No existen registros de cambios operativos.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
