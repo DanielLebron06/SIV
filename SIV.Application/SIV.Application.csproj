@@ -19,7 +19,6 @@
   <ItemGroup>
     <Folder Include="Features\Reportes\Commands\" />
     <Folder Include="Features\Reportes\Queries\" />
-    <Folder Include="Features\Usuarios\Commands\" />
     <Folder Include="Features\Vuelos\Commands\" />
     <Folder Include="Features\Vuelos\Queries\" />
   </ItemGroup>

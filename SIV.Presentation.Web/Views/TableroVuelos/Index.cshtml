@@ -46,8 +46,11 @@
                     </td>
                     <td>@vuelo.FechaSalidaProgramada.ToString("dd/MM/yyyy HH:mm")</td>
                     <td>
-                        <a asp-action="Details" asp-route-id="@vuelo.Id" class="btn btn-sm btn-outline-primary">
-                            Ver Detalle
+                        <a asp-controller="Vuelos"
+                           asp-action="Details"
+                           asp-route-id="@vuelo.Id"
+                           class="btn btn-info">
+                            Ver Detalles
                         </a>
                     </td>
                 </tr>

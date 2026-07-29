@@ -8,6 +8,6 @@ namespace SIV.Domain.Repositories
         Task<Usuario?> BuscarPorEmail(string email);
         Task<List<Usuario>> BuscarPorRol(Rol rol);
         Task<List<Usuario>> BuscarActivos();
-        Task<List<Usuario>> BuscarInternos();
+        Task<List<Usuario>> BuscarInternos(bool? activo = true);
     }
 }

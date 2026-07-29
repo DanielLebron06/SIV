@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SIV.Application.DTOs.Notificacion;
 using SIV.Application.DTOs.Seguimiento;
 using SIV.Application.DTOs.Usuario;
+using SIV.Application.Features.Usuarios.Commands.ActivarUsuario;
 using SIV.Application.Features.Usuarios.Commands.DejarSeguirVuelo;
 using SIV.Application.Features.Usuarios.Commands.DesactivarUsuario;
 using SIV.Application.Features.Usuarios.Commands.RegistrarUsuarioInterno;
@@ -21,7 +22,7 @@ namespace SIV.Presentation.Web.Controllers
         private readonly ISender _sender;
 
         private static readonly Guid UsuarioPruebasId =
-            Guid.Parse("bc09e684-9365-4a1b-9255-6373f3d29f1c");
+            Guid.Parse("352717f7-14e6-4dfe-a183-aeaa21717ae3");
 
         private Guid ObtenerUsuarioActual()
         {
@@ -41,9 +42,15 @@ namespace SIV.Presentation.Web.Controllers
 
         // GET: Usuarios
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool? activo)
         {
-            var result = await _sender.Send(new ObtenerUsuariosInternosQuery());
+            var result = await _sender.Send(
+                new ObtenerUsuariosInternosQuery
+                {
+                    Activo = activo
+                });
+
+            ViewBag.Activo = activo;
 
             if (!result.Success)
             {
@@ -73,6 +80,25 @@ namespace SIV.Presentation.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // POST: Usuarios/Activar/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activar(Guid id)
+        {
+            var result = await _sender.Send(
+                new ActivarUsuarioCommand
+                {
+                    IdUsuarioAactivar = id,
+                    EjecutadorId = ObtenerUsuarioActual()
+                });
+
+            if (!result.Success)
+                TempData["Error"] = result.Message;
+            else
+                TempData["Success"] = "Usuario activado correctamente.";
+
+            return RedirectToAction(nameof(Index));
+        }
 
         // GET: Usuarios/Register
         [HttpGet]

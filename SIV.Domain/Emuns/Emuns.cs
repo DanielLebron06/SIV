@@ -45,7 +45,8 @@
         DesactivarUsuario,
         Login,
         SeguirVuelo,
-        DejarSeguirVuelo
+        DejarSeguirVuelo,
+        ActivarUsuario
     }
 
 }

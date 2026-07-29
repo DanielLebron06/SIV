@@ -28,15 +28,20 @@ namespace SIV.Infrastructure.Persistence.Repositorios
                 .ToListAsync();
         }
 
-        public async Task<List<Usuario>> BuscarInternos()
+        public async Task<List<Usuario>> BuscarInternos(bool? activo = true)
         {
-            //Aqui defino los roles que son internos
             var rolesPermitidos = new[] { Rol.Operador, Rol.Administrador, Rol.Auditor };
 
-            return await _dbSet
+            var query = _dbSet
                 .AsNoTracking()
-                .Where(u => u.Activo && rolesPermitidos.Contains(u.Rol))
-                .ToListAsync();
+                .Where(u => rolesPermitidos.Contains(u.Rol));
+
+            if (activo.HasValue)
+            {
+                query = query.Where(u => u.Activo == activo.Value);
+            }
+
+            return await query.ToListAsync();
         }
     }
 }

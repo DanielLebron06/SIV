@@ -15,7 +15,7 @@ namespace SIV.Presentation.Web.Controllers
     public class CatalogosController : Controller
     {
         private readonly ISender _sender;
-        private static readonly Guid UsuarioPruebasId = Guid.Parse("bc09e684-9365-4a1b-9255-6373f3d29f1c");
+        private static readonly Guid UsuarioPruebasId = Guid.Parse("352717f7-14e6-4dfe-a183-aeaa21717ae3");
 
         public CatalogosController(ISender sender)
         {

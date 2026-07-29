@@ -20,6 +20,28 @@
     </div>
 </div>
 
+<div class="mb-3">
+
+    <a asp-action="Index"
+       asp-route-activo=""
+       class="btn @(ViewBag.Activo == null ? "btn-secondary" : "btn-outline-secondary")">
+        Todos
+    </a>
+
+    <a asp-action="Index"
+       asp-route-activo="true"
+       class="btn @(ViewBag.Activo?.ToString() == "True" ? "btn-success" : "btn-outline-success")">
+        Activos
+    </a>
+
+    <a asp-action="Index"
+       asp-route-activo="false"
+       class="btn @(ViewBag.Activo?.ToString() == "False" ? "btn-danger" : "btn-outline-danger")">
+        Inactivos
+    </a>
+
+</div>
+
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success">
@@ -44,38 +66,25 @@
 <table class="table table-striped table-hover align-middle">
 
     <thead>
-
         <tr>
-
             <th>Email</th>
-
             <th>Rol</th>
-
             <th>Estado</th>
-
-            <th class="text-center">
-                Acciones
-            </th>
-
+            <th class="text-center">Acciones</th>
         </tr>
-
     </thead>
 
     <tbody>
 
         @if (Model.Any())
         {
-            @foreach (var usuario in Model)
+            foreach (var usuario in Model)
             {
                 <tr>
 
-                    <td>
-                        @usuario.Email
-                    </td>
+                    <td>@usuario.Email</td>
 
-                    <td>
-                        @usuario.Rol
-                    </td>
+                    <td>@usuario.Rol</td>
 
                     <td>
 
@@ -115,6 +124,25 @@
 
                             </form>
                         }
+                        else
+                        {
+                            <form asp-action="Activar"
+                                  asp-route-id="@usuario.Id"
+                                  method="post"
+                                  class="d-inline">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-success"
+                                        onclick="return confirm('¿Desea activar este usuario?');">
+
+                                    Activar
+
+                                </button>
+
+                            </form>
+                        }
 
                     </td>
 
@@ -124,14 +152,12 @@
         else
         {
             <tr>
-
                 <td colspan="4"
                     class="text-center text-muted">
 
-                    No existen usuarios internos registrados.
+                    No existen usuarios para este filtro.
 
                 </td>
-
             </tr>
         }
 
