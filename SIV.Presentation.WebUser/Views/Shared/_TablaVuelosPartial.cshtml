@@ -1,0 +1,63 @@
+@model IEnumerable<VueloViewModel>
+@{
+    var vuelos = Model.ToList();
+}
+
+@if (!vuelos.Any())
+{
+    <div class="alert alert-info">
+        No se encontraron vuelos para los criterios seleccionados.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Vuelo</th>
+                    <th>Aerolínea</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Salida planificada</th>
+                    <th>Llegada planificada</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var vuelo in vuelos)
+                {
+                    <tr>
+                        <td class="fw-bold">@vuelo.NumeroVuelo</td>
+                        <td>@vuelo.AerolineaNombre</td>
+                        <td>@vuelo.AeropuertoOrigenIATA</td>
+                        <td>@vuelo.AeropuertoDestinoIATA</td>
+                        <td>@vuelo.FechaSalidaProgramada.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@vuelo.FechaLlegadaProgramada.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <span class="badge @EstadoBadge(vuelo.EstadoActual)">@FiltrosVuelosViewModel.DescripcionEstado(vuelo.EstadoActual)</span>
+                        </td>
+                        <td>
+                            <a asp-action="Detalle" asp-route-id="@vuelo.Id" class="btn btn-sm btn-outline-primary">Detalle</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@functions {
+    static string EstadoBadge(EstadoVuelo estado) => estado switch
+    {
+        EstadoVuelo.Programado => "bg-secondary",
+        EstadoVuelo.Retrasado => "bg-warning text-dark",
+        EstadoVuelo.Embarcando => "bg-info text-dark",
+        EstadoVuelo.EnVuelo => "bg-primary",
+        EstadoVuelo.Aterrizado => "bg-success",
+        EstadoVuelo.Completado => "bg-success",
+        EstadoVuelo.Cancelado => "bg-danger",
+        _ => "bg-secondary"
+    };
+}

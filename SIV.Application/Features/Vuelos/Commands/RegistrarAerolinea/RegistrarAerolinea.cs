@@ -34,7 +34,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAerolinea
         {
             RuleFor(x => x.EjecutadorId).NotEmpty().WithMessage("Se requiere el ID del usuario.");
             RuleFor(x => x.Datos).NotNull().WithMessage("Los datos son requeridos.");
-            RuleFor(x => x.Datos.CodigoIATA).Requerido("Código IATA").Length(2, 3).WithMessage("El código IATA debe tener entre 2 y 3 caracteres.");
+            RuleFor(x => x.Datos.CodigoIATA).Requerido("Código IATA").Length(2).WithMessage("El código IATA de una aerolínea debe tener exactamente 2 caracteres.")
+                .Matches("^[A-Za-z]{2}$").WithMessage("El código IATA debe contener solo letras.");
             RuleFor(x => x.Datos.Nombre).Requerido("Nombre");
         }
     }
@@ -89,8 +90,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAerolinea
                     return result;
                 }
 
-                var existe = await _aerolineaRepository.BuscarPorCodigoAsync(request.Datos.CodigoIATA);
-                if (existe != null)
+                var existe = await _aerolineaRepository.ExistePorCodigoAsync(request.Datos.CodigoIATA);
+                if (existe)
                 {
                     result.Success = false;
                     result.Message = "Ya existe una aerolínea con ese código.";

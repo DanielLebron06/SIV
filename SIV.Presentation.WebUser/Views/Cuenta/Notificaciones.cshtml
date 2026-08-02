@@ -1,0 +1,34 @@
+@model List<NotificacionViewModel>
+@{
+    ViewData["Title"] = "Notificaciones";
+}
+
+<div class="mb-4">
+    <h1 class="h3">Notificaciones</h1>
+    <p class="text-muted">Actualizaciones de los vuelos que sigues.</p>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No tienes notificaciones por el momento.
+    </div>
+}
+else
+{
+    <div class="list-group shadow-sm">
+        @foreach (var notificacion in Model)
+        {
+            <div class="list-group-item @(notificacion.Leida ? "" : "list-group-item-primary")">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                    <div>
+                        <h2 class="h6 mb-1">@notificacion.Titulo</h2>
+                        <p class="mb-1">@notificacion.Mensaje</p>
+                    </div>
+                    <small class="text-muted">@notificacion.FechaEnvio.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+                </div>
+                <a asp-controller="Vuelos" asp-action="Detalle" asp-route-id="@notificacion.VueloId" class="btn btn-sm btn-link p-0">Ver vuelo</a>
+            </div>
+        }
+    </div>
+}

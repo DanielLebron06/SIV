@@ -1,0 +1,104 @@
+@model VueloDetalleViewModel
+@{
+    ViewData["Title"] = $"Detalle - {Model.Vuelo.NumeroVuelo}";
+    var estado = Model.Vuelo.EstadoActual;
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">&larr; Volver al tablero</a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+            <div>
+                <h1 class="h4 mb-1">Vuelo @Model.Vuelo.NumeroVuelo</h1>
+                <p class="text-muted mb-0">@Model.Vuelo.AerolineaNombre</p>
+            </div>
+            <span class="badge fs-6 @EstadoBadge(estado)">@FiltrosVuelosViewModel.DescripcionEstado(estado)</span>
+        </div>
+        <hr />
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Origen</h2>
+                <p class="fs-4 fw-bold mb-0">@Model.Vuelo.AeropuertoOrigenIATA</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Destino</h2>
+                <p class="fs-4 fw-bold mb-0">@Model.Vuelo.AeropuertoDestinoIATA</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Salida planificada</h2>
+                <p class="mb-0">@Model.Vuelo.FechaSalidaProgramada.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Llegada planificada</h2>
+                <p class="mb-0">@Model.Vuelo.FechaLlegadaProgramada.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+        </div>
+        <hr />
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <form asp-action="Seguir" asp-route-vueloId="@Model.Vuelo.Id" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary">Seguir vuelo</button>
+            </form>
+            <form asp-action="DejarDeSeguir" asp-route-vueloId="@Model.Vuelo.Id" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger">Dejar de seguir</button>
+            </form>
+        }
+        else
+        {
+            <a asp-controller="Cuenta" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" class="btn btn-outline-primary">
+                Inicia sesión para seguir este vuelo
+            </a>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white fw-bold">Historial de estados</div>
+    <div class="card-body">
+        @if (!Model.Historial.Any())
+        {
+            <p class="text-muted mb-0">No hay cambios de estado registrados.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Estado</th>
+                            <th>Fecha de cambio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Historial.OrderByDescending(h => h.FechaCambio))
+                        {
+                            <tr>
+                                <td>@FiltrosVuelosViewModel.DescripcionEstado(item.Estado)</td>
+                                <td>@item.FechaCambio.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    static string EstadoBadge(EstadoVuelo estado) => estado switch
+    {
+        EstadoVuelo.Programado => "bg-secondary",
+        EstadoVuelo.Retrasado => "bg-warning text-dark",
+        EstadoVuelo.Embarcando => "bg-info text-dark",
+        EstadoVuelo.EnVuelo => "bg-primary",
+        EstadoVuelo.Aterrizado => "bg-success",
+        EstadoVuelo.Completado => "bg-success",
+        EstadoVuelo.Cancelado => "bg-danger",
+        _ => "bg-secondary"
+    };
+}

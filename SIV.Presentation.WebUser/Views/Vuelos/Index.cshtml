@@ -1,57 +1,59 @@
-﻿@model IEnumerable<SIV.Presentation.WebUser.Models.VueloViewModel>
-
+﻿@model FiltrosVuelosViewModel
 @{
-    ViewData["Title"] = "Consulta de Vuelos";
+    ViewData["Title"] = "Consultar Vuelos";
+    var tipo = ViewBag.Tipo as string ?? "llegadas";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Tablero de Vuelos</h2>
-    <a asp-action="Index" class="btn btn-secondary btn-sm">🔄 Actualizar</a>
+<div class="mb-4">
+    <h1 class="h3">Consultar Vuelos</h1>
+    <p class="text-muted">Consulta los vuelos de llegada y salida con su estado actualizado.</p>
 </div>
 
-<table class="table table-striped table-hover align-middle">
-    <thead class="table-dark">
-        <tr>
-            <th>Nº Vuelo</th>
-            <th>Aerolínea</th>
-            <th>Origen → Destino</th>
-            <th>Salida Programada</th>
-            <th>Estado</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (!Model.Any())
-        {
-            <tr>
-                <td colspan="6" class="text-center text-muted">No hay vuelos disponibles actualmente.</td>
-            </tr>
-        }
-        else
-        {
-            @foreach (var vuelo in Model)
-            {
-                <tr>
-                    <td class="fw-bold">@vuelo.NumeroVuelo</td>
-                    <td>@vuelo.AerolineaNombre</td>
-                    <td>@vuelo.AeropuertoOrigenIATA ➔ @vuelo.AeropuertoDestinoIATA</td>
-                    <td>@vuelo.FechaSalidaProgramada.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td><span class="badge bg-primary">@vuelo.EstadoTexto</span></td>
-                    <td>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <form asp-action="Seguir" method="post" class="d-inline">
-                                <input type="hidden" name="vueloId" value="@vuelo.Id" />
-                                <button type="submit" class="btn btn-sm btn-outline-success">➕ Seguir</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <small class="text-muted"><a asp-action="Login">Inicia sesión</a> para seguir</small>
-                        }
-                    </td>
-                </tr>
-            }
-        }
-    </tbody>
-</table>
+<ul class="nav nav-pills mb-3" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link @(tipo == "llegadas" ? "active" : "")" asp-action="Index" asp-route-tipo="llegadas">Llegadas</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(tipo == "salidas" ? "active" : "")" asp-action="Index" asp-route-tipo="salidas">Salidas</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(tipo == "todos" ? "active" : "")" asp-action="Index" asp-route-tipo="todos">Todos</a>
+    </li>
+</ul>
+
+<form method="get" asp-action="Index" class="card shadow-sm mb-4">
+    <div class="card-body">
+        <input type="hidden" name="tipo" value="@tipo" />
+        <div class="row g-3">
+            <div class="col-md-3 col-12">
+                <label class="form-label" asp-for="AerolineaId">Aerolínea</label>
+                <select class="form-select" asp-for="AerolineaId" asp-items="Model.OpcionesAerolineas">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+            <div class="col-md-3 col-12">
+                <label class="form-label">
+                    @(tipo == "salidas" ? "Aeropuerto de salida" : tipo == "llegadas" ? "Aeropuerto de llegada" : "Aeropuerto")
+                </label>
+                <select class="form-select" name="aeropuertoId" asp-items="Model.OpcionesAeropuertos">
+                    <option value="">@(tipo == "todos" ? "Todos" : "Todos")</option>
+                </select>
+            </div>
+            <div class="col-md-2 col-6">
+                <label class="form-label" asp-for="Fecha">Fecha</label>
+                <input class="form-control" type="date" asp-for="Fecha" asp-format="{0:yyyy-MM-dd}" />
+            </div>
+            <div class="col-md-2 col-6">
+                <label class="form-label" asp-for="Estado">Estado</label>
+                <select class="form-select" asp-for="Estado" asp-items="Model.OpcionesEstados">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div class="col-md-2 col-12 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Buscar</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@await Html.PartialAsync("_TablaVuelosPartial", Model.Vuelos)

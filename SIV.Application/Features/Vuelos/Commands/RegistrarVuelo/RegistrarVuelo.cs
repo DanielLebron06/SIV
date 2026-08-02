@@ -1,12 +1,15 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SIV.Application.Auditoria;
 using SIV.Application.Common.Extensions;
 using SIV.Application.Common.Models;
+using SIV.Application.Common.Settings;
 using SIV.Application.DTOs.Vuelo;
 using SIV.Domain.Emuns;
 using SIV.Domain.Entities;
+using SIV.Domain.Exceptions;
 using SIV.Domain.Interfaces;
 using SIV.Domain.Repositories;
 using System;
@@ -38,9 +41,13 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarVuelo
             RuleFor(x => x.Datos.AerolineaId).NotEmpty().WithMessage("La aerolínea es requerida.");
             RuleFor(x => x.Datos.AeropuertoOrigenId).NotEmpty().WithMessage("El aeropuerto de origen es requerido.");
             RuleFor(x => x.Datos.AeropuertoDestinoId).NotEmpty().WithMessage("El aeropuerto de destino es requerido.");
-            RuleFor(x => x.Datos.FechaSalidaProgramada).NotEmpty().WithMessage("La fecha de salida es requerida.");
+            RuleFor(x => x.Datos.FechaSalidaProgramada).NotEmpty().WithMessage("La fecha de salida es requerida.")
+                .GreaterThan(DateTimeOffset.Now).WithMessage("La fecha de salida debe ser posterior a la fecha y hora actual.");
             RuleFor(x => x.Datos.FechaLlegadaProgramada).NotEmpty().WithMessage("La fecha de llegada es requerida.")
                 .GreaterThan(x => x.Datos.FechaSalidaProgramada).WithMessage("La fecha de llegada debe ser posterior a la de salida.");
+            RuleFor(x => x.Datos)
+                .Must(d => d.AeropuertoOrigenId != d.AeropuertoDestinoId)
+                .WithMessage("El aeropuerto de origen no puede ser el mismo que el de destino.");
         }
     }
 
@@ -58,6 +65,7 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarVuelo
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<RegistrarVueloHandler> _logger;
         private readonly IValidator<RegistrarVueloCommand> _validator;
+        private readonly IOptions<AppSettings> _appSettings;
 
         public RegistrarVueloHandler(
             IVueloRepository vueloRepository,
@@ -68,7 +76,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarVuelo
             IAuditoriaManager auditoriaManager,
             IUnitOfWork unitOfWork,
             ILogger<RegistrarVueloHandler> logger,
-            IValidator<RegistrarVueloCommand> validator)
+            IValidator<RegistrarVueloCommand> validator,
+            IOptions<AppSettings> appSettings)
         {
             _vueloRepository = vueloRepository;
             _aerolineaRepository = aerolineaRepository;
@@ -79,6 +88,7 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarVuelo
             _unitOfWork = unitOfWork;
             _logger = logger;
             _validator = validator;
+            _appSettings = appSettings;
         }
 
         public async Task<Result<bool>> Handle(RegistrarVueloCommand request, CancellationToken cancellationToken)
@@ -103,11 +113,16 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarVuelo
                     return result;
                 }
 
-                var existe = await _vueloRepository.BuscarPorNumeroVuelo(request.Datos.NumeroVuelo);
-                if (existe != null)
+                var existe = await _vueloRepository.ExisteDuplicadoAsync(
+                    request.Datos.NumeroVuelo,
+                    request.Datos.AerolineaId,
+                    request.Datos.AeropuertoOrigenId,
+                    request.Datos.AeropuertoDestinoId,
+                    request.Datos.FechaSalidaProgramada);
+                if (existe)
                 {
                     result.Success = false;
-                    result.Message = "Ya existe un vuelo con ese número.";
+                    result.Message = "Ya existe un vuelo con el mismo número, aerolínea, fecha de salida y ruta.";
                     return result;
                 }
 
@@ -135,18 +150,29 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarVuelo
                     return result;
                 }
 
-                var vuelo = new Vuelo
+                var aeropuertoLocalId = _appSettings.Value.AeropuertoLocalId;
+                if (aeropuertoLocalId == Guid.Empty)
                 {
-                    Id = Guid.NewGuid(),
-                    NumeroVuelo = request.Datos.NumeroVuelo,
-                    AerolineaId = request.Datos.AerolineaId,
-                    AeropuertoOrigenId = request.Datos.AeropuertoOrigenId,
-                    AeropuertoDestinoId = request.Datos.AeropuertoDestinoId,
-                    EstadoActual = EstadoVuelo.Programado,
-                    SalidaPlanificada = request.Datos.FechaSalidaProgramada,
-                    LlegadaPlanificada = request.Datos.FechaLlegadaProgramada,
-                    CreadoPorId = usuario.Id
-                };
+                    result.Success = false;
+                    result.Message = "El aeropuerto local no está configurado en el sistema.";
+                    return result;
+                }
+
+                if (request.Datos.AeropuertoOrigenId != aeropuertoLocalId && request.Datos.AeropuertoDestinoId != aeropuertoLocalId)
+                {
+                    result.Success = false;
+                    result.Message = "Al menos uno de los aeropuertos debe ser el aeropuerto local del sistema.";
+                    return result;
+                }
+
+                var vuelo = Vuelo.Crear(
+                    request.Datos.NumeroVuelo,
+                    request.Datos.AerolineaId,
+                    request.Datos.AeropuertoOrigenId,
+                    request.Datos.AeropuertoDestinoId,
+                    request.Datos.FechaSalidaProgramada,
+                    request.Datos.FechaLlegadaProgramada,
+                    usuario.Id);
 
                 await _vueloRepository.AddAsync(vuelo);
 
@@ -169,6 +195,13 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarVuelo
 
                 result.Success = true;
                 result.Data = true;
+                return result;
+            }
+            catch (DomainException ex)
+            {
+                _logger.LogWarning(ex, "Regla de negocio violada al registrar vuelo.");
+                result.Success = false;
+                result.Message = ex.Message;
                 return result;
             }
             catch (DbException ex)

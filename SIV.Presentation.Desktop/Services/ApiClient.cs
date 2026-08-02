@@ -18,6 +18,7 @@ namespace SIV.Presentation.Desktop.Services
             _httpClient = new HttpClient();
             _httpClient.BaseAddress = new Uri(_baseUrl);
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient.Timeout = TimeSpan.FromSeconds(30);
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -56,7 +57,8 @@ namespace SIV.Presentation.Desktop.Services
                         return doc.RootElement.GetString();
 
                     if (doc.RootElement.ValueKind == JsonValueKind.Object &&
-                        doc.RootElement.TryGetProperty("mensaje", out var mensaje) &&
+                        (doc.RootElement.TryGetProperty("message", out var mensaje) ||
+                         doc.RootElement.TryGetProperty("mensaje", out mensaje)) &&
                         mensaje.ValueKind == JsonValueKind.String)
                         return mensaje.GetString();
                 }

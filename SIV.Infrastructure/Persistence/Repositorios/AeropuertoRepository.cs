@@ -17,6 +17,12 @@ namespace SIV.Infrastructure.Persistence.Repositorios
                 .FirstOrDefaultAsync(a => a.CodigoIATA == codigoAeropuerto && a.Activo);
         }
 
+        public async Task<bool> ExistePorCodigoAsync(string codigoAeropuerto)
+        {
+            return await _dbSet
+                .AnyAsync(a => a.CodigoIATA == codigoAeropuerto);
+        }
+
         public async Task<List<Aeropuerto>> ObtenerActivosAsync()
         {
             return await _dbSet

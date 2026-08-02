@@ -6,6 +6,7 @@ using SIV.Application.Common.Extensions;
 using SIV.Application.Common.Models;
 using SIV.Domain.Emuns;
 using SIV.Domain.Entities;
+using SIV.Domain.Exceptions;
 using SIV.Domain.Interfaces;
 using SIV.Domain.Repositories;
 using System;
@@ -30,6 +31,7 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarCambioPuerta
         {
             RuleFor(x => x.VueloId).NotEmpty().WithMessage("El ID del vuelo es requerido.");
             RuleFor(x => x.NuevaPuerta).NotEmpty().WithMessage("La nueva puerta es requerida.");
+            RuleFor(x => x.Motivo).NotEmpty().WithMessage("El motivo del cambio de puerta es obligatorio.");
             RuleFor(x => x.EjecutadorId).NotEmpty().WithMessage("El ID del usuario es requerido.");
         }
     }
@@ -91,14 +93,7 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarCambioPuerta
                     return result;
                 }
 
-                if (vuelo.EstadoActual == EstadoVuelo.Cancelado || vuelo.EstadoActual == EstadoVuelo.Completado)
-                {
-                    result.Success = false;
-                    result.Message = "Un vuelo Cancelado o Completado no admite cambio de puerta.";
-                    return result;
-                }
-
-                vuelo.PuertaEmbarque = request.NuevaPuerta;
+                vuelo.CambiarPuerta(request.NuevaPuerta);
                 _vueloRepository.Update(vuelo);
 
                 await _cambioOperativoRepository.AddAsync(new CambioOperativo
@@ -122,6 +117,13 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarCambioPuerta
 
                 result.Success = true;
                 result.Data = true;
+                return result;
+            }
+            catch (DomainException ex)
+            {
+                _logger.LogWarning(ex, "Regla de negocio violada al registrar el cambio de puerta.");
+                result.Success = false;
+                result.Message = ex.Message;
                 return result;
             }
             catch (DbException ex)

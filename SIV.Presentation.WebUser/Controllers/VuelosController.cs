@@ -1,202 +1,88 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SIV.Presentation.WebUser.Models;
-using System.Net.Http.Headers;
-using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
+using SIV.Presentation.WebUser.Services;
+using SIV.Presentation.WebUser.ViewModels;
 
 namespace SIV.Presentation.WebUser.Controllers
 {
     public class VuelosController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly JsonSerializerOptions _jsonOptions;
+        private readonly IPublicVueloService _publicVueloService;
+        private readonly ISeguimientoService _seguimientoService;
 
-        public VuelosController(IHttpClientFactory httpClientFactory)
+        public VuelosController(IPublicVueloService publicVueloService, ISeguimientoService seguimientoService)
         {
-            _httpClientFactory = httpClientFactory;
-            _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            _publicVueloService = publicVueloService;
+            _seguimientoService = seguimientoService;
         }
 
-        // Helper para crear cliente HTTP con Token si existe
-        private HttpClient CrearClienteConToken()
-        {
-            var client = _httpClientFactory.CreateClient("SivApi");
-            var token = User.FindFirst("JWTToken")?.Value;
-            if (!string.IsNullOrEmpty(token))
-            {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            }
-            return client;
-        }
-
-        // GET: /Vuelos
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? tipo,
+            Guid? aerolineaId,
+            Guid? aeropuertoId,
+            DateTimeOffset? fecha,
+            EstadoVuelo? estado,
+            CancellationToken cancellationToken)
         {
-            var client = _httpClientFactory.CreateClient("SivApi");
-            var response = await client.GetAsync("vuelos");
+            var catalogo = await _publicVueloService.ObtenerCatalogoAsync(cancellationToken);
+            catalogo.AerolineaId = aerolineaId;
+            catalogo.Fecha = fecha;
+            catalogo.Estado = estado;
 
-            List<VueloViewModel> vuelos = new();
+            var tipoSeleccionado = string.Equals(tipo, "salidas", StringComparison.OrdinalIgnoreCase)
+                ? "salidas"
+                : string.Equals(tipo, "todos", StringComparison.OrdinalIgnoreCase)
+                    ? "todos"
+                    : "llegadas";
 
-            if (response.IsSuccessStatusCode)
+            if (tipoSeleccionado == "llegadas")
             {
-                var content = await response.Content.ReadAsStringAsync();
-                vuelos = JsonSerializer.Deserialize<List<VueloViewModel>>(content, _jsonOptions) ?? new();
+                catalogo.AeropuertoDestinoId = aeropuertoId;
+            }
+            else if (tipoSeleccionado == "salidas")
+            {
+                catalogo.AeropuertoOrigenId = aeropuertoId;
             }
 
-            return View(vuelos);
+            ViewBag.Tipo = tipoSeleccionado;
+            ViewBag.AeropuertoId = aeropuertoId;
+
+            catalogo.Vuelos = await _publicVueloService.ObtenerVuelosAsync(catalogo, cancellationToken);
+
+            return View(catalogo);
         }
 
-        // GET: /Vuelos/Login
         [HttpGet]
-        public IActionResult Login()
+        public async Task<IActionResult> Detalle(Guid id, CancellationToken cancellationToken)
         {
-            if (User.Identity?.IsAuthenticated == true)
-                return RedirectToAction("MisSeguimientos");
-
-            return View();
-        }
-
-        // POST: /Vuelos/Login
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
-        {
-            if (!ModelState.IsValid) return View(model);
-
-            var client = _httpClientFactory.CreateClient("SivApi");
-            var json = JsonSerializer.Serialize(model);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("auth/login", content);
-
-            if (response.IsSuccessStatusCode)
+            var detalle = await _publicVueloService.ObtenerDetalleAsync(id, cancellationToken);
+            if (detalle.Vuelo.Id == Guid.Empty)
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<AuthResponseDto>(responseContent, _jsonOptions);
-
-                // Crear sesión de cookie guardando el JWT
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, model.Email),
-                    new Claim("JWTToken", result?.Token ?? string.Empty)
-                };
-
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-                return RedirectToAction("MisSeguimientos");
+                return NotFound();
             }
 
-            ViewBag.Error = "Credenciales inválidas o error de autenticación.";
-            return View(model);
+            return View(detalle);
         }
 
-        // POST: /Vuelos/Registro
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Registro(RegistroViewModel model)
-        {
-            if (!ModelState.IsValid) return View("Login");
-
-            var client = _httpClientFactory.CreateClient("SivApi");
-            var json = JsonSerializer.Serialize(model);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("usuarios/registro-publico", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                TempData["Success"] = "Registro completado exitosamente. Ahora puedes iniciar sesión.";
-                return RedirectToAction("Login");
-            }
-
-            var errorContent = await response.Content.ReadAsStringAsync();
-
-            ViewBag.Error = !string.IsNullOrEmpty(errorContent)
-                ? errorContent
-                : "No se pudo completar el registro. Verifica los datos ingresados.";
-
-            ViewBag.ActiveTab = "registro";
-            return View("Login");
-        }
-
-        // GET: /Vuelos/Logout
-        [HttpGet]
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Index");
-        }
-
-        // GET: /Vuelos/MisSeguimientos
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> MisSeguimientos()
-        {
-            var client = CrearClienteConToken();
-            var response = await client.GetAsync("usuarios/seguimientos");
-
-            List<VueloViewModel> seguimientos = new();
-
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                seguimientos = JsonSerializer.Deserialize<List<VueloViewModel>>(content, _jsonOptions) ?? new();
-            }
-
-            return View(seguimientos);
-        }
-
-        // POST: /Vuelos/Seguir
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Seguir(Guid vueloId)
+        public async Task<IActionResult> Seguir(Guid vueloId, CancellationToken cancellationToken)
         {
-            var client = CrearClienteConToken();
-            var json = JsonSerializer.Serialize(new { vueloId });
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("usuarios/seguimiento", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                TempData["Success"] = "Vuelo agregado a tus seguimientos.";
-            }
-            else
-            {
-                TempData["Error"] = "No se pudo seguir el vuelo.";
-            }
-
-            return RedirectToAction("Index");
+            await _seguimientoService.AgregarSeguimientoAsync(vueloId, cancellationToken);
+            TempData["Success"] = "Vuelo agregado a tus seguimientos.";
+            return RedirectToAction("Detalle", new { id = vueloId });
         }
 
-        // POST: /Vuelos/DejarDeSeguir
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DejarDeSeguir(Guid vueloId)
+        public async Task<IActionResult> DejarDeSeguir(Guid vueloId, CancellationToken cancellationToken)
         {
-            var client = CrearClienteConToken();
-            var response = await client.DeleteAsync($"usuarios/seguimiento/{vueloId}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                TempData["Success"] = "Vuelo eliminado de tus seguimientos.";
-            }
-            else
-            {
-                TempData["Error"] = "No se pudo eliminar el seguimiento.";
-            }
-
-            return RedirectToAction("MisSeguimientos");
+            await _seguimientoService.DejarSeguirAsync(vueloId, cancellationToken);
+            TempData["Success"] = "Vuelo eliminado de tus seguimientos.";
+            return RedirectToAction("Detalle", new { id = vueloId });
         }
     }
 }

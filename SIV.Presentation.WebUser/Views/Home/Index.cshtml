@@ -1,8 +1,44 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="text-center py-5">
+    <h1 class="display-5 fw-bold">SIV Aeropuerto</h1>
+    <p class="lead text-muted">
+        Consulta los vuelos de llegada y salida, busca vuelos específicos y sigue su estado en tiempo real.
+    </p>
+    <div class="d-flex flex-wrap justify-content-center gap-2">
+        <a asp-controller="Vuelos" asp-action="Index" class="btn btn-primary btn-lg">Consultar Vuelos</a>
+        <a asp-controller="Cuenta" asp-action="Login" class="btn btn-outline-primary btn-lg">Iniciar Sesión</a>
+    </div>
+</section>
+
+<section class="row g-4 mt-2">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Llegadas</h5>
+                <p class="card-text">Revisa los vuelos de llegada con su estado actualizado.</p>
+                <a asp-controller="Vuelos" asp-action="Index" class="btn btn-sm btn-outline-primary">Ver llegadas</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Salidas</h5>
+                <p class="card-text">Consulta los vuelos de salida y sus horarios planificados.</p>
+                <a asp-controller="Vuelos" asp-action="Index" class="btn btn-sm btn-outline-primary">Ver salidas</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Seguimiento</h5>
+                <p class="card-text">Regístrate para seguir vuelos y recibir notificaciones.</p>
+                <a asp-controller="Cuenta" asp-action="Registro" class="btn btn-sm btn-outline-primary">Crear cuenta</a>
+            </div>
+        </div>
+    </div>
+</section>

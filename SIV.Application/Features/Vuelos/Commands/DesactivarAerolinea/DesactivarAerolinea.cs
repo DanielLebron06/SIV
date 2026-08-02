@@ -41,6 +41,7 @@ namespace SIV.Application.Features.Vuelos.Commands.DesactivarAerolinea
     public class DesactivarAerolineaHandler : IRequestHandler<DesactivarAerolineaCommand, Result<bool>>
     {
         private readonly IAerolineaRepository _aerolineaRepository;
+        private readonly IVueloRepository _vueloRepository;
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IAuditoriaManager _auditoriaManager;
         private readonly IUnitOfWork _unitOfWork;
@@ -49,6 +50,7 @@ namespace SIV.Application.Features.Vuelos.Commands.DesactivarAerolinea
 
         public DesactivarAerolineaHandler(
             IAerolineaRepository aerolineaRepository,
+            IVueloRepository vueloRepository,
             IUsuarioRepository usuarioRepository,
             IAuditoriaManager auditoriaManager,
             IUnitOfWork unitOfWork,
@@ -56,6 +58,7 @@ namespace SIV.Application.Features.Vuelos.Commands.DesactivarAerolinea
             IValidator<DesactivarAerolineaCommand> validator)
         {
             _aerolineaRepository = aerolineaRepository;
+            _vueloRepository = vueloRepository;
             _usuarioRepository = usuarioRepository;
             _auditoriaManager = auditoriaManager;
             _unitOfWork = unitOfWork;
@@ -97,6 +100,14 @@ namespace SIV.Application.Features.Vuelos.Commands.DesactivarAerolinea
                 {
                     result.Success = false;
                     result.Message = "La aerolínea ya está desactivada.";
+                    return result;
+                }
+
+                var tieneVuelosActivos = await _vueloRepository.ExistenVuelosActivosPorAerolineaAsync(request.AerolineaId);
+                if (tieneVuelosActivos)
+                {
+                    result.Success = false;
+                    result.Message = "No se puede desactivar la aerolínea porque tiene vuelos activos asociados.";
                     return result;
                 }
 

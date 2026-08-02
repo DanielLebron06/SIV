@@ -6,6 +6,7 @@ using SIV.Application.Common.Extensions;
 using SIV.Application.Common.Models;
 using SIV.Domain.Emuns;
 using SIV.Domain.Entities;
+using SIV.Domain.Exceptions;
 using SIV.Domain.Interfaces;
 using SIV.Domain.Repositories;
 using System;
@@ -95,17 +96,7 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAdelanto
                     return result;
                 }
 
-                if (vuelo.EstadoActual == EstadoVuelo.Cancelado || vuelo.EstadoActual == EstadoVuelo.Completado)
-                {
-                    result.Success = false;
-                    result.Message = "Un vuelo Cancelado o Completado no admite adelantos.";
-                    return result;
-                }
-
-                // Update flight
-                vuelo.SalidaActualizada = request.NuevaHoraEstimada;
-                var diff = request.NuevaHoraEstimada - vuelo.SalidaPlanificada;
-                vuelo.LlegadaActualizada = vuelo.LlegadaPlanificada + diff;
+                vuelo.RegistrarAdelanto(request.NuevaHoraEstimada);
                 _vueloRepository.Update(vuelo);
 
                 await _cambioOperativoRepository.AddAsync(new CambioOperativo
@@ -129,6 +120,13 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAdelanto
 
                 result.Success = true;
                 result.Data = true;
+                return result;
+            }
+            catch (DomainException ex)
+            {
+                _logger.LogWarning(ex, "Regla de negocio violada al registrar el adelanto.");
+                result.Success = false;
+                result.Message = ex.Message;
                 return result;
             }
             catch (DbException ex)

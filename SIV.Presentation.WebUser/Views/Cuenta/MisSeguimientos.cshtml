@@ -1,0 +1,51 @@
+@model List<SeguimientoVueloViewModel>
+@{
+    ViewData["Title"] = "Mis Seguimientos";
+}
+
+<div class="mb-4">
+    <h1 class="h3">Mis Vuelos en Seguimiento</h1>
+    <p class="text-muted">Vuelos que estás siguiendo para recibir notificaciones.</p>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No estás siguiendo ningún vuelo. Busca un vuelo en el tablero y usa la opción "Seguir vuelo".
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Vuelo</th>
+                    <th>Origen / Destino</th>
+                    <th>Estado</th>
+                    <th>Desde</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var seguimiento in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">
+                            <a asp-controller="Vuelos" asp-action="Detalle" asp-route-id="@seguimiento.VueloId">@seguimiento.NumeroVuelo</a>
+                        </td>
+                        <td>@seguimiento.AeropuertoOrigenIATA &rarr; @seguimiento.AeropuertoDestinoIATA</td>
+                        <td><span class="badge bg-secondary">@((EstadoVuelo)seguimiento.EstadoActual)</span></td>
+                        <td>@seguimiento.FechaInicio.ToString("dd/MM/yyyy")</td>
+                        <td class="text-end">
+                            <form asp-controller="Vuelos" asp-action="DejarDeSeguir" asp-route-vueloId="@seguimiento.VueloId" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Dejar de seguir</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

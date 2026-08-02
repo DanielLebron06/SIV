@@ -6,6 +6,7 @@ using SIV.Application.Common.Extensions;
 using SIV.Application.Common.Models;
 using SIV.Domain.Emuns;
 using SIV.Domain.Entities;
+using SIV.Domain.Exceptions;
 using SIV.Domain.Interfaces;
 using SIV.Domain.Repositories;
 using System;
@@ -99,7 +100,7 @@ namespace SIV.Application.Features.Vuelos.Commands.CambiarEstadoVuelo
                     return result;
                 }
 
-                vuelo.EstadoActual = request.NuevoEstado;
+                vuelo.CambiarEstado(request.NuevoEstado);
                 _vueloRepository.Update(vuelo);
 
                 await _historialEstadoRepository.AddAsync(new HistorialEstado
@@ -121,6 +122,13 @@ namespace SIV.Application.Features.Vuelos.Commands.CambiarEstadoVuelo
 
                 result.Success = true;
                 result.Data = true;
+                return result;
+            }
+            catch (DomainException ex)
+            {
+                _logger.LogWarning(ex, "Regla de negocio violada al cambiar estado del vuelo.");
+                result.Success = false;
+                result.Message = ex.Message;
                 return result;
             }
             catch (DbException ex)

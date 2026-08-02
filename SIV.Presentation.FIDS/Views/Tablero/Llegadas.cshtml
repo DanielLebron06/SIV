@@ -1,0 +1,24 @@
+@model FidsViewModel
+@{
+    ViewData["Title"] = "Llegadas";
+}
+
+<div class="fids-tablero">
+    <div class="fids-titulo-panel">
+        <h1 class="fids-titulo">LLEGADAS</h1>
+        <span class="fids-panel-info">@(Model.Aeropuerto ?? "TODOS LOS AEROPUERTOS")</span>
+    </div>
+    <div class="fids-contenido" id="fidsContenido">
+        @await Html.PartialAsync("_TablaFidsPartial", Model)
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.FidsConfig = {
+            tipo: "llegadas",
+            aeropuerto: "@(Model.Aeropuerto ?? string.Empty)",
+            urlRefresco: "@Url.Action("TablaPartial", "Tablero", new { aeropuerto = Model.Aeropuerto, esSalida = false })"
+        };
+    </script>
+}

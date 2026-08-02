@@ -1,6 +1,7 @@
 using SIV.Application;
 using SIV.Presentation.WebApi;
 using SIV.Presentation.WebApi.Hubs;
+using SIV.Presentation.WebApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,8 @@ builder.Services.AddApplicationServices();
 builder.Services.AddWebApiServices(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -17,10 +20,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors(builder => builder
-    .AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
+app.UseCors("PermitirFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -109,22 +109,35 @@ namespace SIV.Application.Features.Usuarios.Commands.IniciarSesion
                     return result;
                 }
 
+                var momentoActual = DateTimeOffset.UtcNow;
+                if (userRegistrado.EstaBloqueado(momentoActual))
+                {
+                    result.Success = false;
+                    result.Message = "La cuenta está temporalmente bloqueada por múltiples intentos fallidos. Intente nuevamente más tarde.";
+                    return result;
+                }
+
                 bool esValido = PasswordHasher.VerifyPassword(request.Password, userRegistrado.PasswordHash);
 
                 if (!esValido)
                 {
+                    var quedoBloqueado = userRegistrado.RegistrarIntentoFallido(momentoActual);
+                    _usuarioRepository.Update(userRegistrado);
+
                     await _auditoriaManager.Registrar(
                         userRegistrado.Email,
                         Modulo.Usuarios,
                         TipoAccion.Login,
-                        "Error: Contraseña invalida",
+                        quedoBloqueado ? "Cuenta bloqueada por intentos fallidos" : "Error: Contraseña invalida",
                         userRegistrado.Id,
                         userRegistrado.Email);
 
                     await _unitOfWork.SaveChangesAsync();
 
                     result.Success = false;
-                    result.Message = "Credenciales inválidas.";
+                    result.Message = quedoBloqueado
+                        ? "Demasiados intentos fallidos. La cuenta ha sido bloqueada temporalmente por 15 minutos."
+                        : "Credenciales inválidas.";
                     return result;
                 }
 
@@ -133,6 +146,12 @@ namespace SIV.Application.Features.Usuarios.Commands.IniciarSesion
                     result.Success = false;
                     result.Message = "El usuario se encuentra inactivo.";
                     return result;
+                }
+
+                if (userRegistrado.IntentosFallidos > 0 || userRegistrado.BloqueadoHasta.HasValue)
+                {
+                    userRegistrado.RegistrarIntentoExitoso();
+                    _usuarioRepository.Update(userRegistrado);
                 }
 
                 await _auditoriaManager.Registrar(

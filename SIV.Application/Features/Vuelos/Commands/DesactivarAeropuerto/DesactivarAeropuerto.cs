@@ -41,6 +41,7 @@ namespace SIV.Application.Features.Vuelos.Commands.DesactivarAeropuerto
     public class DesactivarAeropuertoHandler : IRequestHandler<DesactivarAeropuertoCommand, Result<bool>>
     {
         private readonly IAeropuertoRepository _aeropuertoRepository;
+        private readonly IVueloRepository _vueloRepository;
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IAuditoriaManager _auditoriaManager;
         private readonly IUnitOfWork _unitOfWork;
@@ -49,6 +50,7 @@ namespace SIV.Application.Features.Vuelos.Commands.DesactivarAeropuerto
 
         public DesactivarAeropuertoHandler(
             IAeropuertoRepository aeropuertoRepository,
+            IVueloRepository vueloRepository,
             IUsuarioRepository usuarioRepository,
             IAuditoriaManager auditoriaManager,
             IUnitOfWork unitOfWork,
@@ -56,6 +58,7 @@ namespace SIV.Application.Features.Vuelos.Commands.DesactivarAeropuerto
             IValidator<DesactivarAeropuertoCommand> validator)
         {
             _aeropuertoRepository = aeropuertoRepository;
+            _vueloRepository = vueloRepository;
             _usuarioRepository = usuarioRepository;
             _auditoriaManager = auditoriaManager;
             _unitOfWork = unitOfWork;
@@ -97,6 +100,14 @@ namespace SIV.Application.Features.Vuelos.Commands.DesactivarAeropuerto
                 {
                     result.Success = false;
                     result.Message = "El aeropuerto ya está desactivado.";
+                    return result;
+                }
+
+                var tieneVuelosActivos = await _vueloRepository.ExistenVuelosActivosPorAeropuertoAsync(request.AeropuertoId);
+                if (tieneVuelosActivos)
+                {
+                    result.Success = false;
+                    result.Message = "No se puede desactivar el aeropuerto porque tiene vuelos activos asociados.";
                     return result;
                 }
 

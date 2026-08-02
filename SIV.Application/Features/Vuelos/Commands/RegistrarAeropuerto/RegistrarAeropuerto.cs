@@ -34,7 +34,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAeropuerto
         {
             RuleFor(x => x.EjecutadorId).NotEmpty().WithMessage("Se requiere el ID del usuario.");
             RuleFor(x => x.Datos).NotNull().WithMessage("Los datos son requeridos.");
-            RuleFor(x => x.Datos.CodigoIATA).Requerido("Código IATA").Length(3).WithMessage("El código IATA debe tener 3 caracteres.");
+            RuleFor(x => x.Datos.CodigoIATA).Requerido("Código IATA").Length(3).WithMessage("El código IATA de un aeropuerto debe tener exactamente 3 caracteres.")
+                .Matches("^[A-Za-z]{3}$").WithMessage("El código IATA debe contener solo letras.");
             RuleFor(x => x.Datos.Nombre).Requerido("Nombre");
             RuleFor(x => x.Datos.Ciudad).Requerido("Ciudad");
             RuleFor(x => x.Datos.Pais).Requerido("País");
@@ -91,8 +92,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAeropuerto
                     return result;
                 }
 
-                var existe = await _aeropuertoRepository.BuscarPorCodigoAsync(request.Datos.CodigoIATA);
-                if (existe != null)
+                var existe = await _aeropuertoRepository.ExistePorCodigoAsync(request.Datos.CodigoIATA);
+                if (existe)
                 {
                     result.Success = false;
                     result.Message = "Ya existe un aeropuerto con ese código.";

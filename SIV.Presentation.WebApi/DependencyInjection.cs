@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SIV.Application;
 using SIV.Application.Auditoria;
+using SIV.Application.Common.Settings;
 using SIV.Domain.Entities;
 using SIV.Domain.Interfaces;
 using SIV.Domain.Repositories;
@@ -21,6 +22,14 @@ public static class DependencyInjection
         services.AddControllers();
         services.AddSignalR();
         services.AddEndpointsApiExplorer();
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("PermitirFrontend", policy =>
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader());
+        });
 
         var connectionString = configuration.GetConnectionString("SIVTestConnection");
         services.AddDbContext<SIVDbContext>(options =>
@@ -41,6 +50,8 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddApplicationServices();
+
+        services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
 
         services.AddSwaggerGen(c =>
         {

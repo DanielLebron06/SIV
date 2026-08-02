@@ -15,6 +15,11 @@ namespace SIV.Infrastructure.Persistence.Repositorios
             return await _dbSet
                 .FirstOrDefaultAsync(u => u.Email == email && u.Activo);
         }
+        public async Task<bool> ExistePorEmailAsync(string email)
+        {
+            return await _dbSet
+                .AnyAsync(u => u.Email == email);
+        }
         public async Task<List<Usuario>> BuscarPorRol(Rol rol)
         {
             return await _dbSet

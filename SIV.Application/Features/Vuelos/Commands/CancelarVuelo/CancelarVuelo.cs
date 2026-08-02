@@ -6,6 +6,7 @@ using SIV.Application.Common.Extensions;
 using SIV.Application.Common.Models;
 using SIV.Domain.Emuns;
 using SIV.Domain.Entities;
+using SIV.Domain.Exceptions;
 using SIV.Domain.Interfaces;
 using SIV.Domain.Repositories;
 using System;
@@ -93,14 +94,7 @@ namespace SIV.Application.Features.Vuelos.Commands.CancelarVuelo
                     return result;
                 }
 
-                if (vuelo.EstadoActual == EstadoVuelo.Cancelado || vuelo.EstadoActual == EstadoVuelo.Completado)
-                {
-                    result.Success = false;
-                    result.Message = "Un vuelo ya Cancelado o Completado no puede ser cancelado nuevamente.";
-                    return result;
-                }
-
-                vuelo.EstadoActual = EstadoVuelo.Cancelado;
+                vuelo.Cancelar();
                 _vueloRepository.Update(vuelo);
 
                 await _historialEstadoRepository.AddAsync(new HistorialEstado
@@ -130,6 +124,13 @@ namespace SIV.Application.Features.Vuelos.Commands.CancelarVuelo
 
                 result.Success = true;
                 result.Data = true;
+                return result;
+            }
+            catch (DomainException ex)
+            {
+                _logger.LogWarning(ex, "Regla de negocio violada al cancelar el vuelo.");
+                result.Success = false;
+                result.Message = ex.Message;
                 return result;
             }
             catch (DbException ex)

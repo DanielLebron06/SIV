@@ -6,6 +6,7 @@ using SIV.Application.Common.Extensions;
 using SIV.Application.Common.Models;
 using SIV.Domain.Emuns;
 using SIV.Domain.Entities;
+using SIV.Domain.Exceptions;
 using SIV.Domain.Interfaces;
 using SIV.Domain.Repositories;
 using System;
@@ -95,22 +96,7 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarRetraso
                     return result;
                 }
 
-                if (vuelo.EstadoActual == EstadoVuelo.Cancelado || vuelo.EstadoActual == EstadoVuelo.Completado)
-                {
-                    result.Success = false;
-                    result.Message = "Un vuelo Cancelado o Completado no admite retrasos.";
-                    return result;
-                }
-
-                // Update flight
-                vuelo.EstadoActual = EstadoVuelo.Retrasado;
-                
-                // Assuming NuevaHoraEstimada is for departure, or arrival. We will update SalidaActualizada as default.
-                vuelo.SalidaActualizada = request.NuevaHoraEstimada;
-                // Also update arrival by adding the same diff
-                var diff = request.NuevaHoraEstimada - vuelo.SalidaPlanificada;
-                vuelo.LlegadaActualizada = vuelo.LlegadaPlanificada + diff;
-
+                vuelo.RegistrarRetraso(request.NuevaHoraEstimada);
                 _vueloRepository.Update(vuelo);
 
                 await _historialEstadoRepository.AddAsync(new HistorialEstado
@@ -140,6 +126,13 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarRetraso
 
                 result.Success = true;
                 result.Data = true;
+                return result;
+            }
+            catch (DomainException ex)
+            {
+                _logger.LogWarning(ex, "Regla de negocio violada al registrar el retraso.");
+                result.Success = false;
+                result.Message = ex.Message;
                 return result;
             }
             catch (DbException ex)

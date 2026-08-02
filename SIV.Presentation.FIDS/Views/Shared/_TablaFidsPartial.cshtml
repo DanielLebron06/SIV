@@ -1,0 +1,44 @@
+@model FidsViewModel
+
+@if (!Model.ApiDisponible)
+{
+    <div class="fids-no-data">Conectando con el sistema de información de vuelos...</div>
+}
+else if (!Model.Vuelos.Any())
+{
+    <div class="fids-no-data">No hay vuelos para mostrar en este momento.</div>
+}
+else
+{
+    <table class="fids-table">
+        <thead>
+            <tr>
+                <th>Vuelo</th>
+                <th>Aerolínea</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Hora</th>
+                <th>Hora Est.</th>
+                <th>Puerta</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody id="fidsTbody">
+            @for (var i = 0; i < Model.Vuelos.Count; i++)
+            {
+                var vuelo = Model.Vuelos[i];
+                <tr class="fids-fila" data-fila="@i">
+                    <td class="fids-vuelo">@vuelo.NumeroVuelo</td>
+                    <td class="fids-aerolinea">@vuelo.AerolineaNombre</td>
+                    <td class="fids-iata">@vuelo.OrigenIATA</td>
+                    <td class="fids-iata">@vuelo.DestinoIATA</td>
+                    <td class="fids-hora">@vuelo.HoraProgramadaTexto</td>
+                    <td class="fids-hora">@vuelo.HoraEstimadaTexto</td>
+                    <td class="fids-puerta">@vuelo.PuertaEmbarque</td>
+                    <td><span class="@vuelo.BadgeClass">@vuelo.EstadoTexto</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <input type="hidden" id="fidsTotalPaginas" value="@Model.TotalPaginas" />
+}

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SIV.Domain.Common;
 using SIV.Domain.Entities;
+using SIV.Domain.Emuns;
 using SIV.Domain.Repositories;
 
 namespace SIV.Infrastructure.Persistence.Repositorios
@@ -13,6 +14,19 @@ namespace SIV.Infrastructure.Persistence.Repositorios
         {
             return await _dbSet.AsNoTracking()
                 .FirstOrDefaultAsync(v => v.NumeroVuelo == numeroVuelo);
+        }
+
+        public async Task<bool> ExisteDuplicadoAsync(string numeroVuelo, Guid aerolineaId, Guid aeropuertoOrigenId, Guid aeropuertoDestinoId, DateTimeOffset fechaSalida)
+        {
+            var fechaInicio = fechaSalida.Date;
+            var fechaFin = fechaInicio.AddDays(1);
+            return await _dbSet.AsNoTracking().AnyAsync(v =>
+                v.NumeroVuelo == numeroVuelo &&
+                v.AerolineaId == aerolineaId &&
+                v.AeropuertoOrigenId == aeropuertoOrigenId &&
+                v.AeropuertoDestinoId == aeropuertoDestinoId &&
+                v.SalidaPlanificada >= fechaInicio &&
+                v.SalidaPlanificada < fechaFin);
         }
 
         public async Task<List<Vuelo>> BuscarPorAerolinea(Guid aerolineaId)
@@ -28,6 +42,22 @@ namespace SIV.Infrastructure.Persistence.Repositorios
             var destino = _dbSet.AsNoTracking().Where(v => v.AeropuertoDestinoId == aeropuertoId);
 
             return await origen.Union(destino).ToListAsync();
+        }
+
+        public async Task<bool> ExistenVuelosActivosPorAerolineaAsync(Guid aerolineaId)
+        {
+            return await _dbSet.AsNoTracking().AnyAsync(v =>
+                v.AerolineaId == aerolineaId &&
+                v.EstadoActual != EstadoVuelo.Cancelado &&
+                v.EstadoActual != EstadoVuelo.Completado);
+        }
+
+        public async Task<bool> ExistenVuelosActivosPorAeropuertoAsync(Guid aeropuertoId)
+        {
+            return await _dbSet.AsNoTracking().AnyAsync(v =>
+                (v.AeropuertoOrigenId == aeropuertoId || v.AeropuertoDestinoId == aeropuertoId) &&
+                v.EstadoActual != EstadoVuelo.Cancelado &&
+                v.EstadoActual != EstadoVuelo.Completado);
         }
 
         public async Task<List<Vuelo>> BuscarConFiltros(FiltrosVuelos filtros)

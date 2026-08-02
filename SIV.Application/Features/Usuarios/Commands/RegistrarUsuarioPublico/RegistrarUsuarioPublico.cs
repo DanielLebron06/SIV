@@ -76,8 +76,8 @@ namespace SIV.Application.Features.Usuarios.Commands.RegistrarUsuarioPublico
                     return result;
                 }
 
-                var existe = await _usuarioRepository.BuscarPorEmail(request.Email);
-                if (existe != null)
+                var existe = await _usuarioRepository.ExistePorEmailAsync(request.Email);
+                if (existe)
                 {
                     await _auditoriaManager.Registrar(
                         request.Email,

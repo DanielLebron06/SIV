@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SIV.Application.DTOs.Usuario;
 using SIV.Application.Features.Usuarios.Commands.IniciarSesion;
+using SIV.Presentation.WebApi.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -11,6 +12,7 @@ namespace SIV.Presentation.WebApi.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+    [Produces("application/json")]
     public class AuthController : ControllerBase
     {
         private readonly ISender _sender;
@@ -23,10 +25,13 @@ namespace SIV.Presentation.WebApi.Controllers
         }
 
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
             var result = await _sender.Send(new IniciarSesionCommand { Email = login.Email, Password = login.Password });
-            if (!result.Success || result.Data == null) return Unauthorized(new { mensaje = result.Message });
+            if (!result.Success || result.Data == null) return Unauthorized(ApiResponse.Error(result.Message));
 
             var token = GenerarTokenJWT(result.Data);
             return Ok(new { token });
@@ -34,7 +39,7 @@ namespace SIV.Presentation.WebApi.Controllers
 
         private string GenerarTokenJWT(UsuarioDTO usuario)
         {
-            var secretKey = _config["Jwt:Key"];
+            var secretKey = _config["Jwt:Key"] ?? string.Empty;
             var keyBytes = Encoding.UTF8.GetBytes(secretKey);
 
             var claims = new[]

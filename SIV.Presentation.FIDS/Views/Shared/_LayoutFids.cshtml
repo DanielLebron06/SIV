@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SIV FIDS</title>
+    <link rel="stylesheet" href="~/css/fids.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="fids-header">
+        <div class="fids-header-left">
+            <div class="fids-brand">SIV AEROPUERTO</div>
+            <div class="fids-subtitle">TABLERO DE INFORMACIÓN DE VUELOS</div>
+        </div>
+        <div class="fids-header-right">
+            <div class="fids-clock" id="fidsClock">--:--:--</div>
+            <div class="fids-date" id="fidsDate">----</div>
+        </div>
+        <button type="button" class="fids-fullscreen-btn" id="btnFullscreen" aria-label="Pantalla completa">&#x26F6;</button>
+    </header>
+
+    <main class="fids-main">
+        @RenderBody()
+    </main>
+
+    <footer class="fids-footer">
+        <span>@DateTime.Now.ToString("dd/MM/yyyy")</span>
+        <span id="fidsActualizacion">Última actualización: --:--:--</span>
+    </footer>
+
+    <script src="~/js/fids.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
