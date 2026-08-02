@@ -1,0 +1,76 @@
+﻿@model SIV.Presentation.WebUser.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Acceso";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-5">
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0">Acceso a SIV</h4>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-pills nav-justified mb-3" id="pills-tab">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="tab-login" data-bs-toggle="pill" data-bs-target="#form-login">Iniciar Sesión</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="tab-registro" data-bs-toggle="pill" data-bs-target="#form-registro">Registrarse</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- FORMULARIO DE LOGIN -->
+                    <div class="tab-pane fade show active" id="form-login">
+                        <form asp-action="Login" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Correo Electrónico</label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña</label>
+                                <input asp-for="Password" class="form-control" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Entrar</button>
+                        </form>
+                    </div>
+
+                    <!-- FORMULARIO DE REGISTRO -->
+                    <div class="tab-pane fade" id="form-registro">
+                        <form asp-action="Registro" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Correo Electrónico</label>
+                                <input name="Email" type="email" class="form-control" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña</label>
+                                <input name="Password" type="password" class="form-control" required />
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Crear Cuenta</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@if (ViewBag.ActiveTab == "registro")
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Selecciona el botón de la pestaña de registro
+            var registroTab = document.getElementById("tab-registro");
+            // Inicializa y activa la pestaña usando el JS de Bootstrap
+            var tab = new bootstrap.Tab(registroTab);
+            tab.show();
+        });
+    </script>
+}

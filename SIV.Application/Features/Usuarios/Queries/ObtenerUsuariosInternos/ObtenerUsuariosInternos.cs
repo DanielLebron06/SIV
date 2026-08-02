@@ -5,10 +5,6 @@
     using SIV.Application.DTOs.Usuario;
     using SIV.Domain.Repositories;
     using System.Data.Common;
-    using FluentValidation;
-    using MediatR;
-    using SIV.Application.Common.Models;
-    using SIV.Application.DTOs.Usuario;
 
     namespace SIV.Application.Features.Usuarios.Queries.ObtenerUsuariosInternos
     {

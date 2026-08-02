@@ -9,7 +9,8 @@
   <Folder Name="/Presentation/">
     <Project Path="SIV.Presentation.Desktop/SIV.Presentation.Desktop.csproj" Id="bcf83971-0b0f-4cb5-8583-c10756e668c4" />
     <Project Path="SIV.Presentation.FIDS/SIV.Presentation.FIDS.csproj" Id="123013c2-5e4d-4480-bd57-dd54a8b1f84c" />
-    <Project Path="SIV.Presentation.Web/SIV.Presentation.Web.csproj" Id="7c73ee24-8266-49ca-87ed-546066457582" />
+    <Project Path="SIV.Presentation.Web/SIV.Presentation.WebPracticaForo.csproj" Id="7c73ee24-8266-49ca-87ed-546066457582" />
     <Project Path="SIV.Presentation.WebApi/SIV.Presentation.WebApi.csproj" Id="3328f656-4776-4870-a1ef-fcccb74eff1f" />
+    <Project Path="SIV.Presentation.WebUser/SIV.Presentation.WebUser.csproj" Id="bb11af6d-a06b-4529-8f35-a1e721b78151" />
   </Folder>
 </Solution>

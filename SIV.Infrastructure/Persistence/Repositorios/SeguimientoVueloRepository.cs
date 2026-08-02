@@ -23,6 +23,10 @@ namespace SIV.Infrastructure.Persistence.Repositorios
         public async Task<List<SeguimientoVuelo>> BuscarActivosPorUsuario(Guid usuarioId)
         {
             return await _dbSet
+                .Include(s => s.Vuelo)
+                    .ThenInclude(v => v.AeropuertoOrigen)
+                .Include(s => s.Vuelo)
+                    .ThenInclude(v => v.AeropuertoDestino)
                 .Where(s => s.UsuarioId == usuarioId && s.FechaFin == null)
                 .ToListAsync();
         }

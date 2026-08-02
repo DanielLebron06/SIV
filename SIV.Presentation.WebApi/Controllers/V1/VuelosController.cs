@@ -10,6 +10,11 @@ using SIV.Application.Features.Vuelos.Commands.RegistrarVuelo;
 using SIV.Application.Features.Vuelos.Queries.ConsultarVuelos;
 using SIV.Application.Features.Vuelos.Queries.ObtenerEstadosVuelo;
 using SIV.Application.Features.Vuelos.Queries.ObtenerVuelo;
+using SIV.Application.Features.Vuelos.Commands.CancelarVuelo;
+using SIV.Application.Features.Vuelos.Commands.RegistrarRetraso;
+using SIV.Application.Features.Vuelos.Commands.RegistrarCambioPuerta;
+using SIV.Application.Features.Vuelos.Commands.RegistrarAdelanto;
+using SIV.Application.Features.Vuelos.Queries.ConsultarHistorialCambios;
 using SIV.Domain.Common;
 using SIV.Domain.Emuns;
 using SIV.Presentation.WebApi.Hubs;
@@ -83,10 +88,79 @@ namespace SIV.Presentation.WebApi.Controllers
             if (!result.Success) return BadRequest(result.Message);
             return Ok(result.Data);
         }
+
+        [HttpGet("{id}/cambios")]
+        public async Task<IActionResult> GetHistorialCambios(Guid id)
+        {
+            var result = await _sender.Send(new ConsultarHistorialCambiosQuery { VueloId = id });
+            if (!result.Success) return BadRequest(result.Message);
+            return Ok(result.Data);
+        }
+
+        [HttpPut("{id}/cancelar")]
+        [Authorize(Roles = "Operador")]
+        public async Task<IActionResult> Cancelar(Guid id, [FromBody] CancelarVueloDTO dto)
+        {
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new CancelarVueloCommand { VueloId = id, Motivo = dto.Motivo, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            await _hubContext.Clients.All.SendAsync("VueloCancelado", id);
+            return NoContent();
+        }
+
+        [HttpPut("{id}/retraso")]
+        [Authorize(Roles = "Operador")]
+        public async Task<IActionResult> RegistrarRetraso(Guid id, [FromBody] CambioOperativoTiempoDTO dto)
+        {
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new RegistrarRetrasoCommand { VueloId = id, NuevaHoraEstimada = dto.NuevaHoraEstimada, Motivo = dto.Motivo, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            await _hubContext.Clients.All.SendAsync("VueloRetrasado", id);
+            return NoContent();
+        }
+
+        [HttpPut("{id}/adelanto")]
+        [Authorize(Roles = "Operador")]
+        public async Task<IActionResult> RegistrarAdelanto(Guid id, [FromBody] CambioOperativoTiempoDTO dto)
+        {
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new RegistrarAdelantoCommand { VueloId = id, NuevaHoraEstimada = dto.NuevaHoraEstimada, Motivo = dto.Motivo, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            await _hubContext.Clients.All.SendAsync("VueloAdelantado", id);
+            return NoContent();
+        }
+
+        [HttpPut("{id}/puerta")]
+        [Authorize(Roles = "Operador")]
+        public async Task<IActionResult> RegistrarCambioPuerta(Guid id, [FromBody] CambioPuertaDTO dto)
+        {
+            var ejecutadorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var result = await _sender.Send(new RegistrarCambioPuertaCommand { VueloId = id, NuevaPuerta = dto.NuevaPuerta, Motivo = dto.Motivo, EjecutadorId = ejecutadorId });
+            if (!result.Success) return BadRequest(result.Message);
+            await _hubContext.Clients.All.SendAsync("VueloCambioPuerta", id);
+            return NoContent();
+        }
     }
 
     public class ActualizarEstadoDTO
     {
         public EstadoVuelo NuevoEstado { get; set; }
+    }
+
+    public class CancelarVueloDTO
+    {
+        public string Motivo { get; set; } = string.Empty;
+    }
+
+    public class CambioOperativoTiempoDTO
+    {
+        public DateTimeOffset NuevaHoraEstimada { get; set; }
+        public string Motivo { get; set; } = string.Empty;
+    }
+
+    public class CambioPuertaDTO
+    {
+        public string NuevaPuerta { get; set; } = string.Empty;
+        public string Motivo { get; set; } = string.Empty;
     }
 }

@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using SIV.Application.Common.Models;
 using SIV.Application.DTOs.Seguimiento;
+using SIV.Domain.Emuns;
 using SIV.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -78,7 +79,10 @@ namespace SIV.Application.Features.Usuarios.Queries.ObtenerSeguidosDeUsuario
                         VueloId = seguimiento.VueloId,
                         NumeroVuelo = seguimiento.Vuelo?.NumeroVuelo,
                         FechaInicio = seguimiento.FechaInicio,
-                        FechaFin = seguimiento.FechaFin
+                        FechaFin = seguimiento.FechaFin,
+                        AeropuertoOrigenIATA = seguimiento.Vuelo?.AeropuertoOrigen?.CodigoIATA ?? "---",
+                        AeropuertoDestinoIATA = seguimiento.Vuelo?.AeropuertoDestino?.CodigoIATA ?? "---",
+                        EstadoActual = (int)(seguimiento.Vuelo?.EstadoActual ?? EstadoVuelo.Programado)
                     });
                 }
 

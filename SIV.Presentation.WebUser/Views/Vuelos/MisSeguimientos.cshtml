@@ -1,0 +1,43 @@
+﻿@model IEnumerable<SIV.Presentation.WebUser.Models.VueloViewModel>
+
+@{
+    ViewData["Title"] = "Mis Vuelos Seguidos";
+}
+
+<h2>Mis Vuelos en Seguimiento</h2>
+
+<table class="table table-bordered mt-3">
+    <thead class="table-dark">
+        <tr>
+            <th>Nº Vuelo</th>
+            <th>Origen / Destino</th>
+            <th>Estado Actual</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="4" class="text-center text-muted">No estás siguiendo ningún vuelo actualmente.</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var vuelo in Model)
+            {
+                <tr>
+                    <td class="fw-bold">@vuelo.NumeroVuelo</td>
+                    <td>@vuelo.AeropuertoOrigenIATA ➔ @vuelo.AeropuertoDestinoIATA</td>
+                    <td><span class="badge bg-info text-dark">@vuelo.EstadoTexto</span></td>
+                    <td>
+                        <form asp-action="DejarDeSeguir" method="post" class="d-inline">
+                            <input type="hidden" name="vueloId" value="@vuelo.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger">❌ Dejar de seguir</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
