@@ -13,6 +13,7 @@ namespace SIV.Application.DTOs.Vuelo
         public string AeropuertoOrigenIATA { get; set; } = string.Empty;
         public string AeropuertoDestinoIATA { get; set; } = string.Empty;
         public EstadoVuelo EstadoActual { get; set; }
+        public string? PuertaEmbarque { get; set; }
         public DateTimeOffset FechaSalidaProgramada { get; set; }
         public DateTimeOffset FechaLlegadaProgramada { get; set; }
     }

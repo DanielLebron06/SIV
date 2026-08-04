@@ -1,7 +1,6 @@
 ﻿@model FiltrosVuelosViewModel
 @{
     ViewData["Title"] = "Consultar Vuelos";
-    var tipo = ViewBag.Tipo as string ?? "llegadas";
 }
 
 <div class="mb-4">
@@ -9,47 +8,38 @@
     <p class="text-muted">Consulta los vuelos de llegada y salida con su estado actualizado.</p>
 </div>
 
-<ul class="nav nav-pills mb-3" role="tablist">
-    <li class="nav-item">
-        <a class="nav-link @(tipo == "llegadas" ? "active" : "")" asp-action="Index" asp-route-tipo="llegadas">Llegadas</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link @(tipo == "salidas" ? "active" : "")" asp-action="Index" asp-route-tipo="salidas">Salidas</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link @(tipo == "todos" ? "active" : "")" asp-action="Index" asp-route-tipo="todos">Todos</a>
-    </li>
-</ul>
-
 <form method="get" asp-action="Index" class="card shadow-sm mb-4">
     <div class="card-body">
-        <input type="hidden" name="tipo" value="@tipo" />
         <div class="row g-3">
-            <div class="col-md-3 col-12">
+            <div class="col-md-4 col-12">
                 <label class="form-label" asp-for="AerolineaId">Aerolínea</label>
                 <select class="form-select" asp-for="AerolineaId" asp-items="Model.OpcionesAerolineas">
                     <option value="">Todas</option>
                 </select>
             </div>
-            <div class="col-md-3 col-12">
-                <label class="form-label">
-                    @(tipo == "salidas" ? "Aeropuerto de salida" : tipo == "llegadas" ? "Aeropuerto de llegada" : "Aeropuerto")
-                </label>
-                <select class="form-select" name="aeropuertoId" asp-items="Model.OpcionesAeropuertos">
-                    <option value="">@(tipo == "todos" ? "Todos" : "Todos")</option>
+            <div class="col-md-4 col-12">
+                <label class="form-label" asp-for="AeropuertoOrigenId">Aeropuerto de Origen</label>
+                <select class="form-select" asp-for="AeropuertoOrigenId" asp-items="Model.OpcionesAeropuertos">
+                    <option value="">Todos</option>
                 </select>
             </div>
-            <div class="col-md-2 col-6">
+            <div class="col-md-4 col-12">
+                <label class="form-label" asp-for="AeropuertoDestinoId">Aeropuerto de Destino</label>
+                <select class="form-select" asp-for="AeropuertoDestinoId" asp-items="Model.OpcionesAeropuertos">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div class="col-md-4 col-6">
                 <label class="form-label" asp-for="Fecha">Fecha</label>
                 <input class="form-control" type="date" asp-for="Fecha" asp-format="{0:yyyy-MM-dd}" />
             </div>
-            <div class="col-md-2 col-6">
+            <div class="col-md-4 col-6">
                 <label class="form-label" asp-for="Estado">Estado</label>
                 <select class="form-select" asp-for="Estado" asp-items="Model.OpcionesEstados">
                     <option value="">Todos</option>
                 </select>
             </div>
-            <div class="col-md-2 col-12 d-flex align-items-end">
+            <div class="col-md-4 col-12 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100">Buscar</button>
             </div>
         </div>

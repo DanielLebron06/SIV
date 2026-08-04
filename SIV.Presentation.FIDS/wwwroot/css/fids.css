@@ -87,6 +87,35 @@ body {
     padding: 16px 24px;
 }
 
+.fids-nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    background: var(--fids-panel);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+    padding: 8px 16px;
+}
+
+.fids-nav-link {
+    color: var(--fids-texto);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+    padding: 8px 24px;
+    border-radius: 4px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.fids-nav-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.fids-nav-link.active {
+    background: var(--fids-amarillo);
+    color: #000;
+}
+
 .fids-tablero {
     height: 100%;
     display: flex;

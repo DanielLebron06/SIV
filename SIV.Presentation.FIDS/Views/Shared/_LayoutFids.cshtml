@@ -1,3 +1,4 @@
+@model FidsViewModel
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -19,6 +20,15 @@
         <button type="button" class="fids-fullscreen-btn" id="btnFullscreen" aria-label="Pantalla completa">&#x26F6;</button>
     </header>
 
+    <nav class="fids-nav" aria-label="Pantallas del tablero">
+        <a class="fids-nav-link @(Model.TipoPantalla == TipoPantallaFids.General ? "active" : string.Empty)"
+           asp-controller="Tablero" asp-action="General">General</a>
+        <a class="fids-nav-link @(Model.TipoPantalla == TipoPantallaFids.Salidas ? "active" : string.Empty)"
+           asp-controller="Tablero" asp-action="Salidas">Salidas</a>
+        <a class="fids-nav-link @(Model.TipoPantalla == TipoPantallaFids.Llegadas ? "active" : string.Empty)"
+           asp-controller="Tablero" asp-action="Llegadas">Llegadas</a>
+    </nav>
+
     <main class="fids-main">
         @RenderBody()
     </main>
@@ -28,6 +38,7 @@
         <span id="fidsActualizacion">Última actualización: --:--:--</span>
     </footer>
 
+    <script src="~/lib/signalr/signalr.min.js" asp-append-version="true"></script>
     <script src="~/js/fids.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

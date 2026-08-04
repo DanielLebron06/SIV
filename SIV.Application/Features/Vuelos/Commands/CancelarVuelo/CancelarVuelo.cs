@@ -41,6 +41,8 @@ namespace SIV.Application.Features.Vuelos.Commands.CancelarVuelo
         private readonly IHistorialEstadoRepository _historialEstadoRepository;
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IAuditoriaManager _auditoriaManager;
+        private readonly ISeguimientoVueloRepository _seguimientoVueloRepository;
+        private readonly INotificacionRepository _notificacionRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CancelarVueloHandler> _logger;
         private readonly IValidator<CancelarVueloCommand> _validator;
@@ -51,6 +53,8 @@ namespace SIV.Application.Features.Vuelos.Commands.CancelarVuelo
             IHistorialEstadoRepository historialEstadoRepository,
             IUsuarioRepository usuarioRepository,
             IAuditoriaManager auditoriaManager,
+            ISeguimientoVueloRepository seguimientoVueloRepository,
+            INotificacionRepository notificacionRepository,
             IUnitOfWork unitOfWork,
             ILogger<CancelarVueloHandler> logger,
             IValidator<CancelarVueloCommand> validator)
@@ -60,6 +64,8 @@ namespace SIV.Application.Features.Vuelos.Commands.CancelarVuelo
             _historialEstadoRepository = historialEstadoRepository;
             _usuarioRepository = usuarioRepository;
             _auditoriaManager = auditoriaManager;
+            _seguimientoVueloRepository = seguimientoVueloRepository;
+            _notificacionRepository = notificacionRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _validator = validator;
@@ -120,6 +126,8 @@ namespace SIV.Application.Features.Vuelos.Commands.CancelarVuelo
                     vuelo.NumeroVuelo
                 );
 
+                await CrearNotificacionesAsync(vuelo, $"Vuelo cancelado", $"El vuelo {vuelo.NumeroVuelo} fue cancelado. Motivo: {request.Motivo}");
+
                 await _unitOfWork.SaveChangesAsync();
 
                 result.Success = true;
@@ -146,6 +154,21 @@ namespace SIV.Application.Features.Vuelos.Commands.CancelarVuelo
                 result.Success = false;
                 result.Message = "Ocurrió un error inesperado.";
                 return result;
+            }
+        }
+
+        private async Task CrearNotificacionesAsync(Vuelo vuelo, string titulo, string mensaje)
+        {
+            var seguidores = await _seguimientoVueloRepository.ObtenerSeguidoresPorVueloIdAsync(vuelo.Id);
+            foreach (var seguidor in seguidores)
+            {
+                await _notificacionRepository.AddAsync(new Notificacion
+                {
+                    VueloId = vuelo.Id,
+                    UsuarioId = seguidor.UsuarioId,
+                    Titulo = titulo,
+                    Mensaje = mensaje
+                });
             }
         }
     }

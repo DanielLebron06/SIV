@@ -39,14 +39,17 @@
         <hr />
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <form asp-action="Seguir" asp-route-vueloId="@Model.Vuelo.Id" method="post" class="d-inline">
+            <div id="seguimientoArea" class="d-inline" data-vuelo-id="@Model.Vuelo.Id" data-siguiendo="@(Model.EstaSiguiendo ? "true" : "false")">
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-primary">Seguir vuelo</button>
-            </form>
-            <form asp-action="DejarDeSeguir" asp-route-vueloId="@Model.Vuelo.Id" method="post" class="d-inline">
-                @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-outline-danger">Dejar de seguir</button>
-            </form>
+                @if (Model.EstaSiguiendo)
+                {
+                    <button type="button" class="btn btn-outline-danger" id="btnSeguimiento">Dejar de seguir</button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-primary" id="btnSeguimiento">Seguir vuelo</button>
+                }
+            </div>
         }
         else
         {
@@ -101,4 +104,76 @@
         EstadoVuelo.Cancelado => "bg-danger",
         _ => "bg-secondary"
     };
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var area = document.getElementById("seguimientoArea");
+            if (!area) return;
+
+            var boton = document.getElementById("btnSeguimiento");
+            var tokenInput = area.querySelector('input[name="__RequestVerificationToken"]');
+            var token = tokenInput ? tokenInput.value : "";
+
+            function mostrarMensaje(mensaje, esError) {
+                var contenedor = document.getElementById("mensajeSeguimiento");
+                if (!contenedor) {
+                    contenedor = document.createElement("div");
+                    contenedor.id = "mensajeSeguimiento";
+                    contenedor.className = "mt-2";
+                    area.insertAdjacentElement("afterend", contenedor);
+                }
+                contenedor.innerHTML = "";
+                var alerta = document.createElement("div");
+                alerta.className = "alert alert-" + (esError ? "danger" : "success") + " alert-dismissible fade show";
+                alerta.setAttribute("role", "alert");
+                alerta.textContent = mensaje;
+                var cerrar = document.createElement("button");
+                cerrar.type = "button";
+                cerrar.className = "btn-close";
+                cerrar.setAttribute("data-bs-dismiss", "alert");
+                cerrar.setAttribute("aria-label", "Cerrar");
+                alerta.appendChild(cerrar);
+                contenedor.appendChild(alerta);
+            }
+
+            function actualizarBoton(siguiendo) {
+                area.setAttribute("data-siguiendo", siguiendo ? "true" : "false");
+                boton.textContent = siguiendo ? "Dejar de seguir" : "Seguir vuelo";
+                boton.className = siguiendo ? "btn btn-outline-danger" : "btn btn-primary";
+            }
+
+            boton.addEventListener("click", function () {
+                var siguiendo = area.getAttribute("data-siguiendo") === "true";
+                var accion = siguiendo ? "DejarDeSeguir" : "Seguir";
+                var vueloId = area.getAttribute("data-vuelo-id");
+
+                boton.disabled = true;
+                fetch("/Vuelos/" + accion + "?vueloId=" + vueloId, {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "RequestVerificationToken": token
+                    }
+                })
+                    .then(function (respuesta) {
+                        return respuesta.json();
+                    })
+                    .then(function (datos) {
+                        boton.disabled = false;
+                        if (datos.success) {
+                            actualizarBoton(datos.siguiendo);
+                            mostrarMensaje(datos.message || "Operación completada.", false);
+                        } else {
+                            mostrarMensaje(datos.message || "Ocurrió un error al procesar la solicitud.", true);
+                        }
+                    })
+                    .catch(function () {
+                        boton.disabled = false;
+                        mostrarMensaje("No se pudo conectar con el servidor. Inténtalo nuevamente.", true);
+                    });
+            });
+        })();
+    </script>
 }

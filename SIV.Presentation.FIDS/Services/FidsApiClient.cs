@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 using SIV.Presentation.FIDS.Services.Dtos;
 
 namespace SIV.Presentation.FIDS.Services
@@ -7,43 +8,30 @@ namespace SIV.Presentation.FIDS.Services
     public class FidsApiClient : IFidsApiClient
     {
         private readonly HttpClient _httpClient;
+        private readonly string _aeropuertoDefault;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNameCaseInsensitive = true
         };
 
-        public FidsApiClient(HttpClient httpClient)
+        public FidsApiClient(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
+            _aeropuertoDefault = (configuration["ApiSettings:Aeropuerto"] ?? "SDQ").Trim().ToUpperInvariant();
         }
 
-        public async Task<FidsRespuestaVuelos> GetVuelosAsync(string? aeropuerto, bool esSalida, DateTimeOffset? fecha, CancellationToken cancellationToken = default)
+        public async Task<FidsRespuestaVuelos> GetVuelosAsync(string? aeropuerto, TipoPantallaFids tipoPantalla, TimeSpan? rangoHoras, CancellationToken cancellationToken = default)
         {
-            var respuesta = await ObtenerConReintentoAsync(ConstruirQuery(fecha), cancellationToken);
-            if (!respuesta.Disponible)
-            {
-                return respuesta;
-            }
+            var codigo = ResolverAeropuerto(aeropuerto);
+            return await ObtenerConReintentoAsync(ConstruirQuery(codigo, tipoPantalla, rangoHoras), cancellationToken);
+        }
 
-            if (respuesta.Vuelos.Count == 0 && fecha.HasValue)
-            {
-                var sinFecha = await ObtenerConReintentoAsync(string.Empty, cancellationToken);
-                if (sinFecha.Disponible && sinFecha.Vuelos.Count > 0)
-                {
-                    respuesta = sinFecha;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(aeropuerto))
-            {
-                var iata = aeropuerto.Trim().ToUpperInvariant();
-                respuesta.Vuelos = esSalida
-                    ? respuesta.Vuelos.Where(v => string.Equals(v.AeropuertoOrigenIATA, iata, StringComparison.OrdinalIgnoreCase)).ToList()
-                    : respuesta.Vuelos.Where(v => string.Equals(v.AeropuertoDestinoIATA, iata, StringComparison.OrdinalIgnoreCase)).ToList();
-            }
-
-            return respuesta;
+        public string ResolverAeropuerto(string? aeropuerto)
+        {
+            return string.IsNullOrWhiteSpace(aeropuerto)
+                ? _aeropuertoDefault
+                : aeropuerto.Trim().ToUpperInvariant();
         }
 
         private async Task<FidsRespuestaVuelos> ObtenerConReintentoAsync(string query, CancellationToken cancellationToken)
@@ -55,7 +43,7 @@ namespace SIV.Presentation.FIDS.Services
             {
                 try
                 {
-                    var vuelos = await _httpClient.GetFromJsonAsync<List<VueloFidsDto>>("api/v1/vuelos" + query, JsonOptions, cancellationToken);
+                    var vuelos = await _httpClient.GetFromJsonAsync<List<VueloFidsDto>>("api/v1/fids/vuelos" + query, JsonOptions, cancellationToken);
                     return new FidsRespuestaVuelos { Disponible = true, Vuelos = vuelos ?? new List<VueloFidsDto>() };
                 }
                 catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
@@ -71,13 +59,17 @@ namespace SIV.Presentation.FIDS.Services
             return new FidsRespuestaVuelos { Disponible = false };
         }
 
-        private static string ConstruirQuery(DateTimeOffset? fecha)
+        private static string ConstruirQuery(string aeropuerto, TipoPantallaFids tipoPantalla, TimeSpan? rangoHoras)
         {
-            if (!fecha.HasValue)
+            var query = "?tipoPantalla=" + tipoPantalla.ToString()
+                      + "&aeropuerto=" + Uri.EscapeDataString(aeropuerto);
+
+            if (rangoHoras.HasValue)
             {
-                return string.Empty;
+                query += "&rangoHoras=" + Uri.EscapeDataString(rangoHoras.Value.ToString());
             }
-            return "?fecha=" + Uri.EscapeDataString(fecha.Value.ToString("yyyy-MM-dd"));
+
+            return query;
         }
     }
 }

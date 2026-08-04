@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SIV.Presentation.WebUser.Services;
-using SIV.Presentation.WebUser.ViewModels;
+using SIV.Presentation.WebUser.Services.Common;
+using SIV.Presentation.WebUser.Services.Seguimiento;
+using SIV.Presentation.WebUser.Services.Vuelos;
+using SIV.Presentation.WebUser.ViewModels.Vuelos;
 
 namespace SIV.Presentation.WebUser.Controllers
 {
@@ -18,35 +20,19 @@ namespace SIV.Presentation.WebUser.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Index(
-            string? tipo,
             Guid? aerolineaId,
-            Guid? aeropuertoId,
+            Guid? aeropuertoOrigenId,
+            Guid? aeropuertoDestinoId,
             DateTimeOffset? fecha,
             EstadoVuelo? estado,
             CancellationToken cancellationToken)
         {
             var catalogo = await _publicVueloService.ObtenerCatalogoAsync(cancellationToken);
             catalogo.AerolineaId = aerolineaId;
+            catalogo.AeropuertoOrigenId = aeropuertoOrigenId;
+            catalogo.AeropuertoDestinoId = aeropuertoDestinoId;
             catalogo.Fecha = fecha;
             catalogo.Estado = estado;
-
-            var tipoSeleccionado = string.Equals(tipo, "salidas", StringComparison.OrdinalIgnoreCase)
-                ? "salidas"
-                : string.Equals(tipo, "todos", StringComparison.OrdinalIgnoreCase)
-                    ? "todos"
-                    : "llegadas";
-
-            if (tipoSeleccionado == "llegadas")
-            {
-                catalogo.AeropuertoDestinoId = aeropuertoId;
-            }
-            else if (tipoSeleccionado == "salidas")
-            {
-                catalogo.AeropuertoOrigenId = aeropuertoId;
-            }
-
-            ViewBag.Tipo = tipoSeleccionado;
-            ViewBag.AeropuertoId = aeropuertoId;
 
             catalogo.Vuelos = await _publicVueloService.ObtenerVuelosAsync(catalogo, cancellationToken);
 
@@ -62,6 +48,11 @@ namespace SIV.Presentation.WebUser.Controllers
                 return NotFound();
             }
 
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                detalle.EstaSiguiendo = await EstaSiguiendoAsync(id, cancellationToken);
+            }
+
             return View(detalle);
         }
 
@@ -70,9 +61,25 @@ namespace SIV.Presentation.WebUser.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Seguir(Guid vueloId, CancellationToken cancellationToken)
         {
-            await _seguimientoService.AgregarSeguimientoAsync(vueloId, cancellationToken);
-            TempData["Success"] = "Vuelo agregado a tus seguimientos.";
-            return RedirectToAction("Detalle", new { id = vueloId });
+            try
+            {
+                await _seguimientoService.AgregarSeguimientoAsync(vueloId, cancellationToken);
+                if (EsPeticionAjax())
+                {
+                    return Json(new { success = true, siguiendo = true, message = "Vuelo agregado a tus seguimientos." });
+                }
+                TempData["Success"] = "Vuelo agregado a tus seguimientos.";
+                return RedirectToAction("Detalle", new { id = vueloId });
+            }
+            catch (ApiException ex)
+            {
+                if (EsPeticionAjax())
+                {
+                    return Json(new { success = false, siguiendo = false, message = ex.Message });
+                }
+                TempData["Error"] = MensajesError.ObtenerMensaje(ex);
+                return RedirectToAction("Detalle", new { id = vueloId });
+            }
         }
 
         [Authorize]
@@ -80,9 +87,43 @@ namespace SIV.Presentation.WebUser.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DejarDeSeguir(Guid vueloId, CancellationToken cancellationToken)
         {
-            await _seguimientoService.DejarSeguirAsync(vueloId, cancellationToken);
-            TempData["Success"] = "Vuelo eliminado de tus seguimientos.";
-            return RedirectToAction("Detalle", new { id = vueloId });
+            try
+            {
+                await _seguimientoService.DejarSeguirAsync(vueloId, cancellationToken);
+                if (EsPeticionAjax())
+                {
+                    return Json(new { success = true, siguiendo = false, message = "Vuelo eliminado de tus seguimientos." });
+                }
+                TempData["Success"] = "Vuelo eliminado de tus seguimientos.";
+                return RedirectToAction("Detalle", new { id = vueloId });
+            }
+            catch (ApiException ex)
+            {
+                if (EsPeticionAjax())
+                {
+                    return Json(new { success = false, siguiendo = false, message = ex.Message });
+                }
+                TempData["Error"] = MensajesError.ObtenerMensaje(ex);
+                return RedirectToAction("Detalle", new { id = vueloId });
+            }
+        }
+
+        private async Task<bool> EstaSiguiendoAsync(Guid vueloId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var seguimientos = await _seguimientoService.ObtenerSeguimientosAsync(cancellationToken);
+                return seguimientos.Any(s => s.VueloId == vueloId);
+            }
+            catch (ApiException)
+            {
+                return false;
+            }
+        }
+
+        private bool EsPeticionAjax()
+        {
+            return string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

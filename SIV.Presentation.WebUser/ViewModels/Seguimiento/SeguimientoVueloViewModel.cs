@@ -1,4 +1,4 @@
-namespace SIV.Presentation.WebUser.ViewModels
+namespace SIV.Presentation.WebUser.ViewModels.Seguimiento
 {
     public class SeguimientoVueloViewModel
     {

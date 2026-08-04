@@ -48,6 +48,8 @@ namespace SIV.Application.Features.Vuelos.Commands.CambiarEstadoVuelo
         private readonly IHistorialEstadoRepository _historialEstadoRepository;
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IAuditoriaManager _auditoriaManager;
+        private readonly ISeguimientoVueloRepository _seguimientoVueloRepository;
+        private readonly INotificacionRepository _notificacionRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CambiarEstadoVueloHandler> _logger;
         private readonly IValidator<CambiarEstadoVueloCommand> _validator;
@@ -57,6 +59,8 @@ namespace SIV.Application.Features.Vuelos.Commands.CambiarEstadoVuelo
             IHistorialEstadoRepository historialEstadoRepository,
             IUsuarioRepository usuarioRepository,
             IAuditoriaManager auditoriaManager,
+            ISeguimientoVueloRepository seguimientoVueloRepository,
+            INotificacionRepository notificacionRepository,
             IUnitOfWork unitOfWork,
             ILogger<CambiarEstadoVueloHandler> logger,
             IValidator<CambiarEstadoVueloCommand> validator)
@@ -65,6 +69,8 @@ namespace SIV.Application.Features.Vuelos.Commands.CambiarEstadoVuelo
             _historialEstadoRepository = historialEstadoRepository;
             _usuarioRepository = usuarioRepository;
             _auditoriaManager = auditoriaManager;
+            _seguimientoVueloRepository = seguimientoVueloRepository;
+            _notificacionRepository = notificacionRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _validator = validator;
@@ -118,6 +124,8 @@ namespace SIV.Application.Features.Vuelos.Commands.CambiarEstadoVuelo
                     vuelo.NumeroVuelo
                 );
 
+                await CrearNotificacionesAsync(vuelo, $"Cambio de estado", $"El vuelo {vuelo.NumeroVuelo} cambió su estado a {request.NuevoEstado}.");
+
                 await _unitOfWork.SaveChangesAsync();
 
                 result.Success = true;
@@ -144,6 +152,21 @@ namespace SIV.Application.Features.Vuelos.Commands.CambiarEstadoVuelo
                 result.Success = false;
                 result.Message = "Ocurrió un error inesperado al cambiar el estado del vuelo.";
                 return result;
+            }
+        }
+
+        private async Task CrearNotificacionesAsync(Vuelo vuelo, string titulo, string mensaje)
+        {
+            var seguidores = await _seguimientoVueloRepository.ObtenerSeguidoresPorVueloIdAsync(vuelo.Id);
+            foreach (var seguidor in seguidores)
+            {
+                await _notificacionRepository.AddAsync(new Notificacion
+                {
+                    VueloId = vuelo.Id,
+                    UsuarioId = seguidor.UsuarioId,
+                    Titulo = titulo,
+                    Mensaje = mensaje
+                });
             }
         }
     }

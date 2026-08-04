@@ -80,6 +80,7 @@ namespace SIV.Application.Features.Vuelos.Queries.ObtenerVuelo
                     AeropuertoOrigenId = vuelo.AeropuertoOrigenId,
                     AeropuertoDestinoId = vuelo.AeropuertoDestinoId,
                     EstadoActual = vuelo.EstadoActual,
+                    PuertaEmbarque = vuelo.PuertaEmbarque,
                     FechaSalidaProgramada = vuelo.SalidaPlanificada,
                     FechaLlegadaProgramada = vuelo.LlegadaPlanificada,
                     AerolineaNombre = vuelo.Aerolinea?.Nombre ?? "Sin Aerolínea",

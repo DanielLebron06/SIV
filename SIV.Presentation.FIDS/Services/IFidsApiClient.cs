@@ -4,7 +4,7 @@ namespace SIV.Presentation.FIDS.Services
 {
     public interface IFidsApiClient
     {
-        Task<FidsRespuestaVuelos> GetVuelosAsync(string? aeropuerto, bool esSalida, DateTimeOffset? fecha, CancellationToken cancellationToken = default);
+        Task<FidsRespuestaVuelos> GetVuelosAsync(string? aeropuerto, TipoPantallaFids tipoPantalla, TimeSpan? rangoHoras, CancellationToken cancellationToken = default);
     }
 
     public class FidsRespuestaVuelos

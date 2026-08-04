@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace SIV.Presentation.WebUser.ViewModels
+namespace SIV.Presentation.WebUser.ViewModels.Vuelos
 {
     public class FiltrosVuelosViewModel
     {

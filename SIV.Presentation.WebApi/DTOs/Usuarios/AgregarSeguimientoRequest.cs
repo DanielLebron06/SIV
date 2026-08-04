@@ -1,4 +1,4 @@
-namespace SIV.Presentation.WebApi.DTOs
+namespace SIV.Presentation.WebApi.DTOs.Usuarios
 {
     public class AgregarSeguimientoRequest
     {

@@ -1,11 +1,13 @@
-using SIV.Presentation.WebUser.ViewModels;
+using SIV.Presentation.WebUser.Services.Common;
+using SIV.Presentation.WebUser.ViewModels.Seguimiento;
 
-namespace SIV.Presentation.WebUser.Services
+namespace SIV.Presentation.WebUser.Services.Seguimiento
 {
     public interface ISeguimientoService
     {
         Task<List<SeguimientoVueloViewModel>> ObtenerSeguimientosAsync(CancellationToken cancellationToken = default);
         Task<List<NotificacionViewModel>> ObtenerNotificacionesAsync(CancellationToken cancellationToken = default);
+        Task MarcarNotificacionLeidaAsync(Guid notificacionId, CancellationToken cancellationToken = default);
         Task AgregarSeguimientoAsync(Guid vueloId, CancellationToken cancellationToken = default);
         Task DejarSeguirAsync(Guid vueloId, CancellationToken cancellationToken = default);
     }
@@ -27,6 +29,11 @@ namespace SIV.Presentation.WebUser.Services
         public Task<List<NotificacionViewModel>> ObtenerNotificacionesAsync(CancellationToken cancellationToken = default)
         {
             return _client.GetNotificacionesAsync(cancellationToken);
+        }
+
+        public Task MarcarNotificacionLeidaAsync(Guid notificacionId, CancellationToken cancellationToken = default)
+        {
+            return _client.MarcarNotificacionLeidaAsync(notificacionId, cancellationToken);
         }
 
         public Task AgregarSeguimientoAsync(Guid vueloId, CancellationToken cancellationToken = default)

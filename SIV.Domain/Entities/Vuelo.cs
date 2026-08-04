@@ -118,11 +118,48 @@ namespace SIV.Domain.Entities
             LlegadaActualizada = nuevaLlegadaEstimada;
         }
 
-        public void CambiarPuerta(string nuevaPuerta)
+        /// <summary>
+        /// Asigna por primera vez una puerta de embarque al vuelo.
+        /// </summary>
+        /// <param name="puerta">Puerta de embarque a asignar.</param>
+        /// <exception cref="DomainException">Si el vuelo ya tiene puerta, está en estado terminal o la puerta es inválida.</exception>
+        public void AsignarPuertaInicial(string puerta)
+        {
+            if (EsTerminal)
+            {
+                throw new DomainException("Un vuelo Cancelado o Completado no admite asignación de puerta.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(PuertaEmbarque))
+            {
+                throw new DomainException($"El vuelo ya tiene asignada la puerta {PuertaEmbarque}.");
+            }
+
+            if (string.IsNullOrWhiteSpace(puerta))
+            {
+                throw new DomainException("La puerta de embarque es obligatoria.");
+            }
+
+            PuertaEmbarque = puerta.Trim();
+        }
+
+        /// <summary>
+        /// Cambia la puerta de embarque de un vuelo que ya opera desde una puerta asignada.
+        /// </summary>
+        /// <param name="nuevaPuerta">Nueva puerta de embarque.</param>
+        /// <param name="motivo">Motivo obligatorio del cambio operativo.</param>
+        /// <param name="operadorId">Identificador del usuario operador que ejecuta el cambio.</param>
+        /// <exception cref="DomainException">Si el vuelo no tiene puerta previa, está en estado terminal o los datos son inválidos.</exception>
+        public void CambiarPuertaOperativa(string nuevaPuerta, string motivo, Guid operadorId)
         {
             if (EsTerminal)
             {
                 throw new DomainException("Un vuelo Cancelado o Completado no admite cambio de puerta.");
+            }
+
+            if (string.IsNullOrWhiteSpace(PuertaEmbarque))
+            {
+                throw new DomainException("El vuelo no tiene una puerta asignada; no se puede realizar un cambio operativo de puerta.");
             }
 
             if (string.IsNullOrWhiteSpace(nuevaPuerta))
@@ -130,7 +167,17 @@ namespace SIV.Domain.Entities
                 throw new DomainException("La nueva puerta de embarque es obligatoria.");
             }
 
-            PuertaEmbarque = nuevaPuerta;
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                throw new DomainException("El motivo del cambio de puerta es obligatorio.");
+            }
+
+            if (operadorId == Guid.Empty)
+            {
+                throw new DomainException("El operador que ejecuta el cambio es obligatorio.");
+            }
+
+            PuertaEmbarque = nuevaPuerta.Trim();
         }
 
         public void Cancelar()

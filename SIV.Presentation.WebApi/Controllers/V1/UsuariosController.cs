@@ -13,7 +13,7 @@ using SIV.Application.Features.Usuarios.Queries.ObtenerUsuariosInternos;
 using SIV.Application.DTOs.Seguimiento;
 using SIV.Application.DTOs.Notificacion;
 using SIV.Presentation.WebApi.Common;
-using SIV.Presentation.WebApi.DTOs;
+using SIV.Presentation.WebApi.DTOs.Usuarios;
 using System.Security.Claims;
 
 namespace SIV.Presentation.WebApi.Controllers

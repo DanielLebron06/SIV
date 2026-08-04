@@ -1,6 +1,8 @@
-using SIV.Presentation.WebUser.ViewModels;
+using SIV.Presentation.WebUser.ViewModels.Cuenta;
+using SIV.Presentation.WebUser.ViewModels.Seguimiento;
+using SIV.Presentation.WebUser.ViewModels.Vuelos;
 
-namespace SIV.Presentation.WebUser.Services
+namespace SIV.Presentation.WebUser.Services.Common
 {
     public interface IWebApiClient
     {
@@ -13,6 +15,7 @@ namespace SIV.Presentation.WebUser.Services
         Task<string> RegistroAsync(RegistroViewModel registro, CancellationToken cancellationToken = default);
         Task<List<SeguimientoVueloViewModel>> GetSeguimientosAsync(CancellationToken cancellationToken = default);
         Task<List<NotificacionViewModel>> GetNotificacionesAsync(CancellationToken cancellationToken = default);
+        Task MarcarNotificacionLeidaAsync(Guid id, CancellationToken cancellationToken = default);
         Task AgregarSeguimientoAsync(Guid vueloId, CancellationToken cancellationToken = default);
         Task DejarSeguirAsync(Guid vueloId, CancellationToken cancellationToken = default);
     }

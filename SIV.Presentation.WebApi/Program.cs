@@ -30,5 +30,6 @@ app.MapControllers();
 
 // Mapeas el Hub de SignalR para la consola FIDS
 app.MapHub<VuelosHub>("/hubs/vuelos");
+app.MapHub<FidsHub>("/hubs/fids");
 
 app.Run();

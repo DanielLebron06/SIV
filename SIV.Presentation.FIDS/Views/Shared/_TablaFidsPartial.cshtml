@@ -1,4 +1,5 @@
 @model FidsViewModel
+@using SIV.Presentation.FIDS.Services
 
 @if (!Model.ApiDisponible)
 {
@@ -10,6 +11,10 @@ else if (!Model.Vuelos.Any())
 }
 else
 {
+    var esSalidas = Model.TipoPantalla == TipoPantallaFids.Salidas;
+    var esLlegadas = Model.TipoPantalla == TipoPantallaFids.Llegadas;
+    var esGeneral = Model.TipoPantalla == TipoPantallaFids.General;
+
     <table class="fids-table">
         <thead>
             <tr>
@@ -19,7 +24,15 @@ else
                 <th>Destino</th>
                 <th>Hora</th>
                 <th>Hora Est.</th>
-                <th>Puerta</th>
+                @if (esSalidas || esGeneral)
+                {
+                    <th>Puerta</th>
+                }
+                @if (esLlegadas || esGeneral)
+                {
+                    <th>Terminal</th>
+                    <th>Banda</th>
+                }
                 <th>Estado</th>
             </tr>
         </thead>
@@ -27,6 +40,9 @@ else
             @for (var i = 0; i < Model.Vuelos.Count; i++)
             {
                 var vuelo = Model.Vuelos[i];
+                var mostrarPuerta = esSalidas || (esGeneral && vuelo.EsSalida);
+                var mostrarBandaTerminal = esLlegadas || (esGeneral && !vuelo.EsSalida);
+
                 <tr class="fids-fila" data-fila="@i">
                     <td class="fids-vuelo">@vuelo.NumeroVuelo</td>
                     <td class="fids-aerolinea">@vuelo.AerolineaNombre</td>
@@ -34,7 +50,15 @@ else
                     <td class="fids-iata">@vuelo.DestinoIATA</td>
                     <td class="fids-hora">@vuelo.HoraProgramadaTexto</td>
                     <td class="fids-hora">@vuelo.HoraEstimadaTexto</td>
-                    <td class="fids-puerta">@vuelo.PuertaEmbarque</td>
+                    @if (esSalidas || esGeneral)
+                    {
+                        <td class="fids-puerta">@(mostrarPuerta ? vuelo.PuertaEmbarque : "-")</td>
+                    }
+                    @if (esLlegadas || esGeneral)
+                    {
+                        <td class="fids-terminal">@(mostrarBandaTerminal ? vuelo.Terminal : "-")</td>
+                        <td class="fids-banda">@(mostrarBandaTerminal ? vuelo.BandaEquipaje : "-")</td>
+                    }
                     <td><span class="@vuelo.BadgeClass">@vuelo.EstadoTexto</span></td>
                 </tr>
             }

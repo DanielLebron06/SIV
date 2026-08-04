@@ -1,6 +1,6 @@
 using SIV.Domain.Emuns;
 
-namespace SIV.Presentation.WebApi.DTOs
+namespace SIV.Presentation.WebApi.DTOs.Vuelos
 {
     public class ActualizarEstadoDTO
     {

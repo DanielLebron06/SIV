@@ -10,5 +10,6 @@ namespace SIV.Domain.Repositories
         Task<bool> ExisteSeguimiento(Guid usuarioId, Guid vueloId);
         Task<SeguimientoVuelo?> ObtenerSeguimiento(Guid usuarioId, Guid vueloId);
         Task<List<SeguimientoVuelo>> BuscarPorPeriodoAsync(DateTime fechaInicio, DateTime fechaFin);
+        Task<List<SeguimientoVuelo>> ObtenerSeguidoresPorVueloIdAsync(Guid vueloId);
     }
 }

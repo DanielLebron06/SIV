@@ -84,6 +84,7 @@ namespace SIV.Application.Features.Vuelos.Queries.ConsultarVuelos
                         AeropuertoOrigenIATA = vuelo.AeropuertoOrigen?.CodigoIATA ?? "N/A",
                         AeropuertoDestinoIATA = vuelo.AeropuertoDestino?.CodigoIATA ?? "N/A",
                         EstadoActual = vuelo.EstadoActual,
+                        PuertaEmbarque = vuelo.PuertaEmbarque,
                         FechaSalidaProgramada = vuelo.SalidaPlanificada,
                         FechaLlegadaProgramada = vuelo.LlegadaPlanificada
                     });

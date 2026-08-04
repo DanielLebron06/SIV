@@ -90,6 +90,64 @@ namespace SIV.Infrastructure.Persistence.Repositorios
             return await query.ToListAsync();
         }
 
+        public async Task<List<Vuelo>> BuscarParaFidsAsync(FiltrosFids filtros)
+        {
+            var query = _dbSet.AsNoTracking()
+                .Include(v => v.Aerolinea)
+                .Include(v => v.AeropuertoOrigen)
+                .Include(v => v.AeropuertoDestino)
+                .AsQueryable();
+
+            if (filtros.Estado.HasValue)
+                query = query.Where(v => v.EstadoActual == filtros.Estado);
+
+            if (filtros.AerolineaId.HasValue)
+                query = query.Where(v => v.AerolineaId == filtros.AerolineaId);
+
+            if (!string.IsNullOrWhiteSpace(filtros.AeropuertoCodigo))
+            {
+                var codigo = filtros.AeropuertoCodigo.Trim().ToUpperInvariant();
+
+                if (filtros.TipoPantalla == TipoPantallaFids.Salidas)
+                {
+                    query = query.Where(v => v.AeropuertoOrigen != null && v.AeropuertoOrigen.CodigoIATA == codigo);
+                }
+                else if (filtros.TipoPantalla == TipoPantallaFids.Llegadas)
+                {
+                    query = query.Where(v => v.AeropuertoDestino != null && v.AeropuertoDestino.CodigoIATA == codigo);
+                }
+                else
+                {
+                    query = query.Where(v =>
+                        (v.AeropuertoOrigen != null && v.AeropuertoOrigen.CodigoIATA == codigo) ||
+                        (v.AeropuertoDestino != null && v.AeropuertoDestino.CodigoIATA == codigo));
+                }
+            }
+
+            if (filtros.RangoHoras.HasValue)
+            {
+                var ahora = DateTimeOffset.Now;
+                var fin = ahora + filtros.RangoHoras.Value;
+
+                if (filtros.TipoPantalla == TipoPantallaFids.Salidas)
+                {
+                    query = query.Where(v => v.SalidaPlanificada >= ahora && v.SalidaPlanificada <= fin);
+                }
+                else if (filtros.TipoPantalla == TipoPantallaFids.Llegadas)
+                {
+                    query = query.Where(v => v.LlegadaPlanificada >= ahora && v.LlegadaPlanificada <= fin);
+                }
+                else
+                {
+                    query = query.Where(v =>
+                        (v.SalidaPlanificada >= ahora && v.SalidaPlanificada <= fin) ||
+                        (v.LlegadaPlanificada >= ahora && v.LlegadaPlanificada <= fin));
+                }
+            }
+
+            return await query.ToListAsync();
+        }
+
         public async Task<List<Vuelo>> BuscarPorPeriodoAsync(DateTime fechaInicio, DateTime fechaFin)
         {
             return await _dbSet.AsNoTracking()

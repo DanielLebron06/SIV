@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SIV.Presentation.WebUser.Services;
-using SIV.Presentation.WebUser.ViewModels;
+using SIV.Presentation.WebUser.Services.Common;
+using SIV.Presentation.WebUser.Services.Cuenta;
+using SIV.Presentation.WebUser.Services.Seguimiento;
+using SIV.Presentation.WebUser.ViewModels.Cuenta;
+using SIV.Presentation.WebUser.ViewModels.Seguimiento;
 
 namespace SIV.Presentation.WebUser.Controllers
 {
@@ -103,6 +106,18 @@ namespace SIV.Presentation.WebUser.Controllers
         public async Task<IActionResult> Notificaciones(CancellationToken cancellationToken)
         {
             var notificaciones = await _seguimientoService.ObtenerNotificacionesAsync(cancellationToken);
+
+            foreach (var notificacion in notificaciones.Where(n => !n.Leida))
+            {
+                try
+                {
+                    await _seguimientoService.MarcarNotificacionLeidaAsync(notificacion.Id, cancellationToken);
+                }
+                catch
+                {
+                }
+            }
+
             return View(notificaciones);
         }
     }

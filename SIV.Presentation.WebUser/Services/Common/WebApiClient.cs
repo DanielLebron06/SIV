@@ -2,10 +2,11 @@ using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json;
-using SIV.Presentation.WebUser.Exceptions;
-using SIV.Presentation.WebUser.ViewModels;
+using SIV.Presentation.WebUser.ViewModels.Cuenta;
+using SIV.Presentation.WebUser.ViewModels.Seguimiento;
+using SIV.Presentation.WebUser.ViewModels.Vuelos;
 
-namespace SIV.Presentation.WebUser.Services
+namespace SIV.Presentation.WebUser.Services.Common
 {
     public class WebApiClient : IWebApiClient
     {
@@ -64,11 +65,11 @@ namespace SIV.Presentation.WebUser.Services
 
         public async Task<string> RegistroAsync(RegistroViewModel registro, CancellationToken cancellationToken = default)
         {
-            var respuesta = await PostAsync<RegistroViewModel, MensajeResponse>(
+            var respuesta = await PostAsync<RegistroViewModel, ApiErrorResponse>(
                 "api/v1/usuarios/registro-publico",
                 new RegistroViewModel { Email = registro.Email, Password = registro.Password },
                 cancellationToken);
-            return respuesta.Mensaje ?? string.Empty;
+            return respuesta.Message ?? respuesta.Mensaje ?? string.Empty;
         }
 
         public async Task<List<SeguimientoVueloViewModel>> GetSeguimientosAsync(CancellationToken cancellationToken = default)
@@ -81,6 +82,12 @@ namespace SIV.Presentation.WebUser.Services
         {
             var resultado = await GetAsync<List<NotificacionViewModel>>("api/v1/usuarios/notificaciones", cancellationToken);
             return resultado ?? new List<NotificacionViewModel>();
+        }
+
+        public Task MarcarNotificacionLeidaAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, $"api/v1/notificaciones/{id}/leida");
+            return EnviarAsync(request, cancellationToken);
         }
 
         public async Task AgregarSeguimientoAsync(Guid vueloId, CancellationToken cancellationToken = default)
@@ -143,10 +150,15 @@ namespace SIV.Presentation.WebUser.Services
             var statusCode = (int)response.StatusCode;
             try
             {
-                var cuerpo = await response.Content.ReadFromJsonAsync<MensajeResponse>(JsonOptions, cancellationToken);
-                if (!string.IsNullOrWhiteSpace(cuerpo?.Mensaje))
+                var cuerpo = await response.Content.ReadFromJsonAsync<ApiErrorResponse>(JsonOptions, cancellationToken);
+                var mensaje = !string.IsNullOrWhiteSpace(cuerpo?.Message)
+                    ? cuerpo!.Message
+                    : !string.IsNullOrWhiteSpace(cuerpo?.Mensaje)
+                        ? cuerpo!.Mensaje
+                        : string.Empty;
+                if (!string.IsNullOrWhiteSpace(mensaje))
                 {
-                    return new ApiException(statusCode, cuerpo.Mensaje);
+                    return new ApiException(statusCode, mensaje);
                 }
             }
             catch
@@ -187,9 +199,11 @@ namespace SIV.Presentation.WebUser.Services
             public string Token { get; set; } = string.Empty;
         }
 
-        private sealed class MensajeResponse
+        private sealed class ApiErrorResponse
         {
+            public string? Message { get; set; }
             public string? Mensaje { get; set; }
+            public List<string>? Errors { get; set; }
         }
 
         private sealed class AgregarSeguimientoRequest

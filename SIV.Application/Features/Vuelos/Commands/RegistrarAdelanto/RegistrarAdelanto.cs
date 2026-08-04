@@ -43,6 +43,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAdelanto
         private readonly IHistorialEstadoRepository _historialEstadoRepository;
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IAuditoriaManager _auditoriaManager;
+        private readonly ISeguimientoVueloRepository _seguimientoVueloRepository;
+        private readonly INotificacionRepository _notificacionRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<RegistrarAdelantoHandler> _logger;
         private readonly IValidator<RegistrarAdelantoCommand> _validator;
@@ -53,6 +55,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAdelanto
             IHistorialEstadoRepository historialEstadoRepository,
             IUsuarioRepository usuarioRepository,
             IAuditoriaManager auditoriaManager,
+            ISeguimientoVueloRepository seguimientoVueloRepository,
+            INotificacionRepository notificacionRepository,
             IUnitOfWork unitOfWork,
             ILogger<RegistrarAdelantoHandler> logger,
             IValidator<RegistrarAdelantoCommand> validator)
@@ -62,6 +66,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAdelanto
             _historialEstadoRepository = historialEstadoRepository;
             _usuarioRepository = usuarioRepository;
             _auditoriaManager = auditoriaManager;
+            _seguimientoVueloRepository = seguimientoVueloRepository;
+            _notificacionRepository = notificacionRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _validator = validator;
@@ -116,6 +122,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAdelanto
                     vuelo.NumeroVuelo
                 );
 
+                await CrearNotificacionesAsync(vuelo, $"Vuelo adelantado", $"El vuelo {vuelo.NumeroVuelo} fue adelantado a las {request.NuevaHoraEstimada.ToLocalTime():HH:mm}.");
+
                 await _unitOfWork.SaveChangesAsync();
 
                 result.Success = true;
@@ -142,6 +150,21 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarAdelanto
                 result.Success = false;
                 result.Message = "Ocurrió un error inesperado.";
                 return result;
+            }
+        }
+
+        private async Task CrearNotificacionesAsync(Vuelo vuelo, string titulo, string mensaje)
+        {
+            var seguidores = await _seguimientoVueloRepository.ObtenerSeguidoresPorVueloIdAsync(vuelo.Id);
+            foreach (var seguidor in seguidores)
+            {
+                await _notificacionRepository.AddAsync(new Notificacion
+                {
+                    VueloId = vuelo.Id,
+                    UsuarioId = seguidor.UsuarioId,
+                    Titulo = titulo,
+                    Mensaje = mensaje
+                });
             }
         }
     }

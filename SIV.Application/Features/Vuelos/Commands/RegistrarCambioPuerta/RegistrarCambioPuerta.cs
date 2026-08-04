@@ -42,6 +42,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarCambioPuerta
         private readonly ICambioOperativoRepository _cambioOperativoRepository;
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IAuditoriaManager _auditoriaManager;
+        private readonly ISeguimientoVueloRepository _seguimientoVueloRepository;
+        private readonly INotificacionRepository _notificacionRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<RegistrarCambioPuertaHandler> _logger;
         private readonly IValidator<RegistrarCambioPuertaCommand> _validator;
@@ -51,6 +53,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarCambioPuerta
             ICambioOperativoRepository cambioOperativoRepository,
             IUsuarioRepository usuarioRepository,
             IAuditoriaManager auditoriaManager,
+            ISeguimientoVueloRepository seguimientoVueloRepository,
+            INotificacionRepository notificacionRepository,
             IUnitOfWork unitOfWork,
             ILogger<RegistrarCambioPuertaHandler> logger,
             IValidator<RegistrarCambioPuertaCommand> validator)
@@ -59,6 +63,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarCambioPuerta
             _cambioOperativoRepository = cambioOperativoRepository;
             _usuarioRepository = usuarioRepository;
             _auditoriaManager = auditoriaManager;
+            _seguimientoVueloRepository = seguimientoVueloRepository;
+            _notificacionRepository = notificacionRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _validator = validator;
@@ -93,7 +99,7 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarCambioPuerta
                     return result;
                 }
 
-                vuelo.CambiarPuerta(request.NuevaPuerta);
+                vuelo.CambiarPuertaOperativa(request.NuevaPuerta, request.Motivo, request.EjecutadorId);
                 _vueloRepository.Update(vuelo);
 
                 await _cambioOperativoRepository.AddAsync(new CambioOperativo
@@ -112,6 +118,8 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarCambioPuerta
                     vuelo.Id,
                     vuelo.NumeroVuelo
                 );
+
+                await CrearNotificacionesAsync(vuelo, $"Cambio de puerta", $"El vuelo {vuelo.NumeroVuelo} ahora opera desde la puerta {request.NuevaPuerta}.");
 
                 await _unitOfWork.SaveChangesAsync();
 
@@ -139,6 +147,21 @@ namespace SIV.Application.Features.Vuelos.Commands.RegistrarCambioPuerta
                 result.Success = false;
                 result.Message = "Ocurrió un error inesperado.";
                 return result;
+            }
+        }
+
+        private async Task CrearNotificacionesAsync(Vuelo vuelo, string titulo, string mensaje)
+        {
+            var seguidores = await _seguimientoVueloRepository.ObtenerSeguidoresPorVueloIdAsync(vuelo.Id);
+            foreach (var seguidor in seguidores)
+            {
+                await _notificacionRepository.AddAsync(new Notificacion
+                {
+                    VueloId = vuelo.Id,
+                    UsuarioId = seguidor.UsuarioId,
+                    Titulo = titulo,
+                    Mensaje = mensaje
+                });
             }
         }
     }

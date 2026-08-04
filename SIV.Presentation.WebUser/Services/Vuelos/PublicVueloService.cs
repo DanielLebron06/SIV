@@ -1,6 +1,7 @@
-using SIV.Presentation.WebUser.ViewModels;
+using SIV.Presentation.WebUser.Services.Common;
+using SIV.Presentation.WebUser.ViewModels.Vuelos;
 
-namespace SIV.Presentation.WebUser.Services
+namespace SIV.Presentation.WebUser.Services.Vuelos
 {
     public interface IPublicVueloService
     {

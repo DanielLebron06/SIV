@@ -49,4 +49,11 @@
         ActivarUsuario
     }
 
+    public enum TipoPantallaFids
+    {
+        Salidas,
+        Llegadas,
+        General
+    }
+
 }

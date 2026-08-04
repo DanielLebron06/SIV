@@ -4,6 +4,7 @@ namespace SIV.Presentation.FIDS.ViewModels
     {
         public string Titulo { get; set; } = string.Empty;
         public string? Aeropuerto { get; set; }
+        public Services.TipoPantallaFids TipoPantalla { get; set; } = Services.TipoPantallaFids.General;
         public DateTime UltimaActualizacion { get; set; }
         public bool ApiDisponible { get; set; } = true;
         public List<FilaVueloViewModel> Vuelos { get; set; } = new();

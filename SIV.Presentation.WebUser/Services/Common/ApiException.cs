@@ -1,4 +1,4 @@
-namespace SIV.Presentation.WebUser.Exceptions
+namespace SIV.Presentation.WebUser.Services.Common
 {
     public class ApiException : Exception
     {

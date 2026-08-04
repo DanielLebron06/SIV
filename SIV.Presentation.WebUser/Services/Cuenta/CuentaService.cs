@@ -1,9 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using SIV.Presentation.WebUser.ViewModels;
+using SIV.Presentation.WebUser.Services.Common;
+using SIV.Presentation.WebUser.ViewModels.Cuenta;
 
-namespace SIV.Presentation.WebUser.Services
+namespace SIV.Presentation.WebUser.Services.Cuenta
 {
     public interface ICuentaService
     {

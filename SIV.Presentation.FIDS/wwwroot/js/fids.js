@@ -102,6 +102,38 @@
             });
     }
 
+    function conectarSignalR() {
+        if (typeof signalR === "undefined") return;
+        var hubUrl = window.FidsConfig ? window.FidsConfig.hubUrl : null;
+        if (!hubUrl) return;
+
+        var conexion = new signalR.HubConnectionBuilder()
+            .withUrl(hubUrl)
+            .withAutomaticReconnect()
+            .build();
+
+        function refrescarEnEvento() {
+            refrescarContenido();
+        }
+
+        conexion.on("RecibirActualizacionVuelo", refrescarEnEvento);
+
+        conexion.start()
+            .then(function () {
+                var tipo = window.FidsConfig ? window.FidsConfig.tipo : null;
+                if (tipo === "salidas") {
+                    conexion.invoke("UnirseASalidas").catch(function () {});
+                } else if (tipo === "llegadas") {
+                    conexion.invoke("UnirseALlegadas").catch(function () {});
+                } else {
+                    conexion.invoke("UnirseAGeneral").catch(function () {});
+                }
+            })
+            .catch(function (error) {
+                console.log("FIDS: no se pudo conectar al hub FIDS.", error);
+            });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         actualizarReloj();
         setInterval(actualizarReloj, 1000);
@@ -112,6 +144,7 @@
         }
 
         aplicarPaginacion();
+        conectarSignalR();
         setInterval(refrescarContenido, intervaloRefresco);
     });
 })();

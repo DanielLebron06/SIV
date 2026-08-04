@@ -62,5 +62,12 @@ namespace SIV.Infrastructure.Persistence.Repositorios
                     (s.FechaFin != null && s.FechaFin >= fechaInicio && s.FechaFin <= fechaFin))
                 .ToListAsync();
         }
+
+        public async Task<List<SeguimientoVuelo>> ObtenerSeguidoresPorVueloIdAsync(Guid vueloId)
+        {
+            return await _dbSet
+                .Where(s => s.VueloId == vueloId && s.FechaFin == null)
+                .ToListAsync();
+        }
     }
 }

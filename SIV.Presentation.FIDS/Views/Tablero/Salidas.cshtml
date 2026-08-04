@@ -1,12 +1,13 @@
 @model FidsViewModel
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
-    ViewData["Title"] = "Salidas";
+    ViewData["Title"] = Model.Titulo;
 }
 
 <div class="fids-tablero">
     <div class="fids-titulo-panel">
-        <h1 class="fids-titulo">SALIDAS</h1>
-        <span class="fids-panel-info">@(Model.Aeropuerto ?? "TODOS LOS AEROPUERTOS")</span>
+        <h1 class="fids-titulo">@Model.Titulo</h1>
+        <span class="fids-panel-info">AEROPUERTO @Model.Aeropuerto</span>
     </div>
     <div class="fids-contenido" id="fidsContenido">
         @await Html.PartialAsync("_TablaFidsPartial", Model)
@@ -16,9 +17,10 @@
 @section Scripts {
     <script>
         window.FidsConfig = {
-            tipo: "salidas",
+            tipo: "@Model.TipoPantalla.ToString().ToLowerInvariant()",
             aeropuerto: "@(Model.Aeropuerto ?? string.Empty)",
-            urlRefresco: "@Url.Action("TablaPartial", "Tablero", new { aeropuerto = Model.Aeropuerto, esSalida = true })"
+            urlRefresco: "@Url.Action("TablaPartial", "Tablero", new { aeropuerto = Model.Aeropuerto, tipoPantalla = Model.TipoPantalla.ToString() })",
+            hubUrl: "@Configuration["ApiSettings:BaseUrl"]hubs/fids"
         };
     </script>
 }

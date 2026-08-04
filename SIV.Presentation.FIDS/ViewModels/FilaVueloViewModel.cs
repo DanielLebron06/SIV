@@ -10,7 +10,10 @@ namespace SIV.Presentation.FIDS.ViewModels
         public DateTimeOffset HoraProgramada { get; set; }
         public DateTimeOffset? HoraEstimada { get; set; }
         public string PuertaEmbarque { get; set; } = string.Empty;
+        public string BandaEquipaje { get; set; } = string.Empty;
+        public string Terminal { get; set; } = string.Empty;
         public EstadoFids Estado { get; set; }
+        public bool EsSalida { get; set; }
 
         public string HoraProgramadaTexto => HoraProgramada.ToLocalTime().ToString("HH:mm");
         public string HoraEstimadaTexto => HoraEstimada?.ToLocalTime().ToString("HH:mm") ?? "--:--";

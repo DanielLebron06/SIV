@@ -1,7 +1,11 @@
 ﻿
-using SIV.Presentation.Desktop.Formularios;
-using SIV.Presentation.Desktop.Services;
-using SIV.Presentation.Desktop.Services.Implementations;
+using SIV.Presentation.Desktop.Auth;
+using SIV.Presentation.Desktop.Catalogos;
+using SIV.Presentation.Desktop.Common;
+using SIV.Presentation.Desktop.Notificaciones;
+using SIV.Presentation.Desktop.Reportes;
+using SIV.Presentation.Desktop.Usuarios;
+using SIV.Presentation.Desktop.Vuelos;
 using System;
 using System.Windows.Forms;
 
@@ -21,6 +25,7 @@ namespace SIV.Presentation.Desktop
             var catalogoService = new CatalogoService(apiClient);
             var userService = new UserService(apiClient);
             var reporteService = new ReporteService(apiClient);
+            var notificacionService = new NotificacionService(apiClient);
 
             bool mantenerAplicacion = true;
 
@@ -36,6 +41,7 @@ namespace SIV.Presentation.Desktop
                             catalogoService,
                             userService,
                             reporteService,
+                            notificacionService,
                             frmLogin.TokenRespuesta,
                             frmLogin.RolUsuario,
                             frmLogin.NombreUsuario))

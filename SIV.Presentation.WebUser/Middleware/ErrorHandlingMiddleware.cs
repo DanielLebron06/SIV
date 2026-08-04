@@ -1,5 +1,4 @@
-using SIV.Presentation.WebUser.Exceptions;
-using SIV.Presentation.WebUser.Services;
+using SIV.Presentation.WebUser.Services.Common;
 
 namespace SIV.Presentation.WebUser.Middleware
 {
@@ -49,8 +48,21 @@ namespace SIV.Presentation.WebUser.Middleware
                 return;
             }
 
+            if (EsPeticionAjax(context))
+            {
+                context.Response.StatusCode = statusCode;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { success = false, message = mensaje });
+                return;
+            }
+
             context.Response.Redirect($"/Home/Error?statusCode={statusCode}&mensaje={Uri.EscapeDataString(mensaje)}");
             await Task.CompletedTask;
+        }
+
+        private static bool EsPeticionAjax(HttpContext context)
+        {
+            return string.Equals(context.Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

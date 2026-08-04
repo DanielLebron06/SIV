@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace SIV.Presentation.WebUser.ViewModels
+namespace SIV.Presentation.WebUser.ViewModels.Cuenta
 {
     public class LoginViewModel
     {
