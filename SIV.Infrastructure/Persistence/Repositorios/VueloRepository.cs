@@ -128,21 +128,9 @@ namespace SIV.Infrastructure.Persistence.Repositorios
             {
                 var ahora = DateTimeOffset.Now;
                 var fin = ahora + filtros.RangoHoras.Value;
-
-                if (filtros.TipoPantalla == TipoPantallaFids.Salidas)
-                {
-                    query = query.Where(v => v.SalidaPlanificada >= ahora && v.SalidaPlanificada <= fin);
-                }
-                else if (filtros.TipoPantalla == TipoPantallaFids.Llegadas)
-                {
-                    query = query.Where(v => v.LlegadaPlanificada >= ahora && v.LlegadaPlanificada <= fin);
-                }
-                else
-                {
-                    query = query.Where(v =>
-                        (v.SalidaPlanificada >= ahora && v.SalidaPlanificada <= fin) ||
-                        (v.LlegadaPlanificada >= ahora && v.LlegadaPlanificada <= fin));
-                }
+                query = query.Where(v =>
+                    (v.SalidaPlanificada >= ahora && v.SalidaPlanificada <= fin) ||
+                    (v.LlegadaPlanificada >= ahora && v.LlegadaPlanificada <= fin));
             }
 
             return await query.ToListAsync();
